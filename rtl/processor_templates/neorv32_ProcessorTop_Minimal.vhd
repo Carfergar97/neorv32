@@ -17,30 +17,34 @@ library neorv32;
 entity neorv32_ProcessorTop_Minimal is
   generic (
     -- Clocking --
-    CLOCK_FREQUENCY : natural := 0;       -- clock frequency of clk_i in Hz
+    CLOCK_FREQUENCY : natural := 125000000;       -- clock frequency of clk_i in Hz
     -- Internal Instruction memory --
     IMEM_EN         : boolean := true;    -- implement processor-internal instruction memory
-    IMEM_SIZE       : natural := 8*1024;  -- size of processor-internal instruction memory in bytes
+    IMEM_SIZE       : natural := 64*1024;  -- size of processor-internal instruction memory in bytes
     -- Internal Data memory --
     DMEM_EN         : boolean := true;    -- implement processor-internal data memory
-    DMEM_SIZE       : natural := 64*1024; -- size of processor-internal data memory in bytes
+    DMEM_SIZE       : natural := 16*1024; -- size of processor-internal data memory in bytes
     -- Processor peripherals --
-    IO_PWM_NUM_CH   : natural := 3        -- number of PWM channels to implement (0..16)
+    IO_UART0_EN     : boolean := true;
+    RISCV_ISA_M     : boolean := false;
+    RISCV_ISA_C     : boolean := false;
+    CPU_CONSTT_BR_EN      : boolean                        := false;       -- implement constant-time branches
+    CPU_FAST_MUL_EN       : boolean                        := false;       -- use DSPs for M extension's multiplier
+    CPU_FAST_SHIFT_EN     : boolean                        := false       -- use barrel shifter for shift operations
   );
   port (
     -- Global control --
     clk_i  : in  std_logic;
     rstn_i : in  std_logic;
-    -- PWM (available if IO_PWM_NUM_CH > 0) --
-    pwm_o  : out std_ulogic_vector(IO_PWM_NUM_CH-1 downto 0)
+    -- UART0 --
+    uart0_rxd_i : in std_logic;
+    uart0_txd_o : out std_logic
   );
 end entity;
 
 architecture neorv32_ProcessorTop_Minimal_rtl of neorv32_ProcessorTop_Minimal is
 
-  -- internal IO connection --
-  signal con_pwm_o  : std_ulogic_vector(15 downto 0);
-
+  signal w_rst: std_logic;
 begin
 
   -- The core of the problem ----------------------------------------------------------------
@@ -61,18 +65,23 @@ begin
     DMEM_SIZE        => DMEM_SIZE,       -- size of processor-internal data memory in bytes
     -- Processor peripherals --
     IO_CLINT_EN      => true,            -- implement core local interruptor (CLINT)?
-    IO_PWM_NUM_CH    => IO_PWM_NUM_CH    -- number of PWM channels to implement (0..12); 0 = disabled
+    IO_UART0_EN => IO_UART0_EN,
+    RISCV_ISA_M => RISCV_ISA_M,
+    RISCV_ISA_C => RISCV_ISA_C,
+    CPU_FAST_MUL_EN => CPU_FAST_MUL_EN,
+    CPU_CONSTT_BR_EN => CPU_CONSTT_BR_EN,
+    CPU_FAST_SHIFT_EN => CPU_FAST_SHIFT_EN
   )
-  port map (
+  port map(
     -- Global control --
     clk_i  => clk_i,    -- global clock, rising edge
-    rstn_i => rstn_i,   -- global reset, low-active, async
-    -- PWM (available if IO_PWM_NUM_CH > 0) --
-    pwm_o  => con_pwm_o -- pwm channels
+    rstn_i => w_rst,   -- global reset, low-active, async
+    -- UART0 --
+    uart0_rxd_i => uart0_rxd_i,
+    uart0_txd_o => uart0_txd_o 
   );
 
-  -- PWM --
-  pwm_o <= con_pwm_o(IO_PWM_NUM_CH-1 downto 0);
-
+  -- Reset Inversion Logic --
+  w_rst <= not rstn_i;
 
 end architecture;
