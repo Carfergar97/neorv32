@@ -28,8 +28,11 @@ entity neorv32_ProcessorTop_Minimal is
     IO_UART0_EN     : boolean := true;
     RISCV_ISA_M     : boolean := false;
     RISCV_ISA_C     : boolean := false;
+    RISCV_ISA_E           : boolean                        := false;       -- implement embedded RF extension
+    RISCV_ISA_Zfinx       : boolean                        := false;       -- implement 32-bit floating-point extension
     CPU_CONSTT_BR_EN      : boolean                        := false;       -- implement constant-time branches
     CPU_FAST_MUL_EN       : boolean                        := false;       -- use DSPs for M extension's multiplier
+    CPU_RF_HW_RST_EN      : boolean                        := false;       -- implement full hardware reset for register file
     CPU_FAST_SHIFT_EN     : boolean                        := false       -- use barrel shifter for shift operations
   );
   port (
@@ -68,9 +71,13 @@ begin
     IO_UART0_EN => IO_UART0_EN,
     RISCV_ISA_M => RISCV_ISA_M,
     RISCV_ISA_C => RISCV_ISA_C,
+    RISCV_ISA_E => RISCV_ISA_E,
+    RISCV_ISA_Zfinx => RISCV_ISA_Zfinx,
+
     CPU_FAST_MUL_EN => CPU_FAST_MUL_EN,
     CPU_CONSTT_BR_EN => CPU_CONSTT_BR_EN,
-    CPU_FAST_SHIFT_EN => CPU_FAST_SHIFT_EN
+    CPU_FAST_SHIFT_EN => CPU_FAST_SHIFT_EN,
+    CPU_RF_HW_RST_EN => CPU_RF_HW_RST_EN
   )
   port map(
     -- Global control --
