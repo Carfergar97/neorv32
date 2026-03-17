@@ -10,6 +10,7 @@
 #include "sha3_api.h"
 #include "slh_adrs.h"
 #include <stdio.h>
+#include "neorv32.h"
 #include "log.h"
 
 char buffer[512] = {0};
@@ -19,27 +20,27 @@ static void kat_hex(const char *label,
 {
   #ifdef DEBUG_LOG
     size_t i;
-    printf("%s = ", label);
+    neorv32_uart0_printf("%s = ", label);
     for (i = 0; i < xlen; i++) {
-        printf("%02X", x[i]);
+        neorv32_uart0_printf("%02X", x[i]);
     }
-    printf("\n"); 
+    neorv32_uart0_printf("\n"); 
   #endif /* ifdef DEBUG_LOG */
 
 }
 
 static void print_addr(slh_ctx_t *ctx){
   #ifdef DEBUG_LOG
-  printf("----------------------\n");
-  printf("ADDR:\n");
-  printf("----------------------\n");
-  printf("|Layer address: %d   \n",rev8_be32(ctx->adrs->u32[0]));
-  printf("|Tree address: %lu   \n",rev8_be64(*((uint64_t*)(ctx->adrs->u32 + 2))));
-  printf("|Type: %d   \n",rev8_be32(ctx->adrs->u32[4]));
-  printf("|Key pair address: %d   \n",rev8_be32(ctx->adrs->u32[5]));
-  printf("|Chain address: %d   \n",rev8_be32(ctx->adrs->u32[6]));
-  printf("|Hash address: %d   \n",rev8_be32(ctx->adrs->u32[7]));
-  printf("----------------------\n\n"); 
+  neorv32_uart0_printf("----------------------\n");
+  neorv32_uart0_printf("ADDR:\n");
+  neorv32_uart0_printf("----------------------\n");
+  neorv32_uart0_printf("|Layer address: %d   \n",rev8_be32(ctx->adrs->u32[0]));
+  neorv32_uart0_printf("|Tree address: %lu   \n",rev8_be64(*((uint64_t*)(ctx->adrs->u32 + 2))));
+  neorv32_uart0_printf("|Type: %d   \n",rev8_be32(ctx->adrs->u32[4]));
+  neorv32_uart0_printf("|Key pair address: %d   \n",rev8_be32(ctx->adrs->u32[5]));
+  neorv32_uart0_printf("|Chain address: %d   \n",rev8_be32(ctx->adrs->u32[6]));
+  neorv32_uart0_printf("|Hash address: %d   \n",rev8_be32(ctx->adrs->u32[7]));
+  neorv32_uart0_printf("----------------------\n\n"); 
   #endif /* ifdef DEBUG_LOG */
 }
 
@@ -232,7 +233,7 @@ static void shake_wots_chain( slh_ctx_t *ctx, uint8_t *tmp, uint32_t s)
     FIPS_REF(6, 6, "Se calcula sk_i = PRF(...)");
     #endif
     shake_prf(ctx, tmp);
-    //sprintf(buffer, "sk_%d", rev8_be32(ctx->adrs->u32[6]));
+    //neorv32_uart0_printf(buffer, "sk_%d", rev8_be32(ctx->adrs->u32[6]));
     kat_hex(buffer, tmp, ctx->prm->n);
 
     //  chain
@@ -245,7 +246,7 @@ static void shake_wots_chain( slh_ctx_t *ctx, uint8_t *tmp, uint32_t s)
     FIPS_REF(6, 8, "Se calcula pk_i = chain(...,sk_i)");
     #endif
     shake_chain( ctx, tmp, tmp, 0, s);
-    //sprintf(buffer, "pk_%d", rev8_be32(ctx->adrs->u32[6]));
+    //neorv32_uart0_printf(buffer, "pk_%d", rev8_be32(ctx->adrs->u32[6]));
     kat_hex(buffer, tmp, ctx->prm->n);
 }
 
@@ -270,7 +271,7 @@ static void shake_fors_hash( slh_ctx_t *ctx, uint8_t *tmp, uint32_t s)
         FIPS_REF(19,12,"Se vuelve a establecer el campo TYPE de la estructura ADDR a FORS_TREE\n");
       #endif
         adrs_set_type(ctx, ADRS_FORS_TREE);
-        //sprintf(buffer, "Se esta calculando el nodo F_%d = F(PK.SEED,ADRS,sk_k_%d)",adrs_get_tree_index(ctx) ,adrs_get_tree_index(ctx));
+        //neorv32_uart0_printf(buffer, "Se esta calculando el nodo F_%d = F(PK.SEED,ADRS,sk_k_%d)",adrs_get_tree_index(ctx) ,adrs_get_tree_index(ctx));
       #ifdef DEBUG_LOG
         FIPS_REF(15, 5, buffer);
       #endif

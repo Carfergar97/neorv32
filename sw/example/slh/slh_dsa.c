@@ -12,6 +12,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "log.h"
+#include "neorv32.h"
+
+#define SLH_DETERMINISTIC
 
 extern char buffer[512]; // Buffer used to print debug information 
 
@@ -20,26 +23,26 @@ static void kat_hex(const char *label,
 {
     #ifdef DEBUG_LOG
     size_t i;
-    printf("%s = ", label);
+    neorv32_uart0_printf("%s = ", label);
     for (i = 0; i < xlen; i++) {
-        printf("%02X", x[i]);
+        neorv32_uart0_printf("%02X", x[i]);
     }
-    printf("\n");
+    neorv32_uart0_printf("\n");
     #endif
 }
 
 static void print_addr(slh_ctx_t *ctx){
   #ifdef DEBUG_LOG
-  printf("----------------------\n");
-  printf("ADDR:\n");
-  printf("----------------------\n");
-  printf("|Layer address: %d   \n",rev8_be32(ctx->adrs->u32[0]));
-  printf("|Tree address: %lu   \n",rev8_be64(*((uint64_t*)(ctx->adrs->u32 + 2))));
-  printf("|Type: %d   \n",rev8_be32(ctx->adrs->u32[4]));
-  printf("|Key pair address: %d   \n",rev8_be32(ctx->adrs->u32[5]));
-  printf("|Chain address: %d   \n",rev8_be32(ctx->adrs->u32[6]));
-  printf("|Hash address: %d   \n",rev8_be32(ctx->adrs->u32[7]));
-  printf("----------------------\n\n");
+  neorv32_uart0_printf("----------------------\n");
+  neorv32_uart0_printf("ADDR:\n");
+  neorv32_uart0_printf("----------------------\n");
+  neorv32_uart0_printf("|Layer address: %d   \n",rev8_be32(ctx->adrs->u32[0]));
+  neorv32_uart0_printf("|Tree address: %lu   \n",rev8_be64(*((uint64_t*)(ctx->adrs->u32 + 2))));
+  neorv32_uart0_printf("|Type: %d   \n",rev8_be32(ctx->adrs->u32[4]));
+  neorv32_uart0_printf("|Key pair address: %d   \n",rev8_be32(ctx->adrs->u32[5]));
+  neorv32_uart0_printf("|Chain address: %d   \n",rev8_be32(ctx->adrs->u32[6]));
+  neorv32_uart0_printf("|Hash address: %d   \n",rev8_be32(ctx->adrs->u32[7]));
+  neorv32_uart0_printf("----------------------\n\n");
   #endif
 
 }
@@ -281,7 +284,7 @@ static void xmss_node(  slh_ctx_t *ctx, uint8_t *node,
         #endif
         prm->h_t(ctx, h0, tmp, len * n);
         if (!flag) {
-            //sprintf(buffer, "PK_%d", j); 
+            //sneorv32_uart0_printf(buffer, "PK_%d", j); 
             kat_hex(buffer, h0, prm->n);
         }
 
@@ -306,7 +309,7 @@ static void xmss_node(  slh_ctx_t *ctx, uint8_t *node,
             p--;
             h0 = p >= 1 ? h[p - 1] : node;
             prm->h_h(ctx, h0, h0, h[p]);
-            //sprintf(buffer, "H_%d%d", rev8_be32(ctx->adrs->u32[6]), adrs_get_tree_index(ctx));
+            //sneorv32_uart0_printf(buffer, "H_%d%d", rev8_be32(ctx->adrs->u32[6]), adrs_get_tree_index(ctx));
             kat_hex(buffer, h0, ctx->prm->n);
         }
         i++;        //  advance index
@@ -328,14 +331,14 @@ static size_t xmss_sign(slh_ctx_t *ctx, uint8_t *sx, const uint8_t *m,
 
     sx_sz = get_len(prm) * n;
     auth = sx + sx_sz;
-    //sprintf(buffer,"Se procede a determinar el camino de autenticacion para la hoja %d\n", idx);
+    //sneorv32_uart0_printf(buffer,"Se procede a determinar el camino de autenticacion para la hoja %d\n", idx);
     FIPS_REF(10, 1, buffer);
     for (j = 0; j < prm->hp; j++) {
         k = (idx >> j) ^ 1;
-        //sprintf(buffer,"Se va a proceder a calcular el nodo %d del nivel %d del arbol %lu XMSS en el nivel %d del hiperarbol.\n",k, j, rev8_be64(*((uint64_t *)(ctx->adrs->u32 + 2))), rev8_be32(ctx->adrs->u32[0]));
+        //sneorv32_uart0_printf(buffer,"Se va a proceder a calcular el nodo %d del nivel %d del arbol %lu XMSS en el nivel %d del hiperarbol.\n",k, j, rev8_be64(*((uint64_t *)(ctx->adrs->u32 + 2))), rev8_be32(ctx->adrs->u32[0]));
         FIPS_REF(10, 3, buffer);
         xmss_node(ctx, auth, k, j, 1);
-        //sprintf(buffer, "El nodo n_%d_%d es ", j, k);
+        //sneorv32_uart0_printf(buffer, "El nodo n_%d_%d es ", j, k);
         kat_hex(buffer, auth, prm->n);
         auth += n;
     }
@@ -343,10 +346,10 @@ static size_t xmss_sign(slh_ctx_t *ctx, uint8_t *sx, const uint8_t *m,
 
     adrs_set_type_and_clear_not_kp(ctx, ADRS_WOTS_HASH);
     adrs_set_key_pair_address(ctx, idx);
-    //sprintf(buffer,"Se procede a calcular la firma WOTS usando la hoja %d del arbol %d del nivel %d del hiperarbol", idx, adrs_get_tree_index(ctx), rev8_be32(ctx->adrs->u32[0]));
+    //sneorv32_uart0_printf(buffer,"Se procede a calcular la firma WOTS usando la hoja %d del arbol %d del nivel %d del hiperarbol", idx, adrs_get_tree_index(ctx), rev8_be32(ctx->adrs->u32[0]));
     FIPS_REF(10, 7, buffer);
     wots_sign(ctx, sx, m);
-    //sprintf(buffer, "La firma WOTS usando la hoja %d del arbol %d del nivel %d del hiperarbol es", idx, adrs_get_tree_index(ctx), rev8_be32(ctx->adrs->u32[0]));
+    //sneorv32_uart0_printf(buffer, "La firma WOTS usando la hoja %d del arbol %d del nivel %d del hiperarbol es", idx, adrs_get_tree_index(ctx), rev8_be32(ctx->adrs->u32[0]));
     kat_hex(buffer, sx, get_len(prm) * n);
 
     return sx_sz;
@@ -368,10 +371,10 @@ static void xmss_pk_from_sig(   slh_ctx_t *ctx, uint8_t *root, uint32_t idx,
     adrs_set_type_and_clear_not_kp(ctx, ADRS_WOTS_HASH);
     FIPS_REF(11, 2, "Se establece el campo KEY_PAIR_ADDRESS de la estructura ADDR para calcular la clave publica del esquema WOTS correspondiente.");
     adrs_set_key_pair_address(ctx, idx);
-    //sprintf(buffer,"Se va a proceder a calcular la clave publica PK_%d del esquema WOTS empleado en la capa 0 del arbol XMSS", idx);
+    //sneorv32_uart0_printf(buffer,"Se va a proceder a calcular la clave publica PK_%d del esquema WOTS empleado en la capa 0 del arbol XMSS", idx);
     FIPS_REF(11, 5, buffer); 
     wots_pk_from_sig(ctx, root, sig, m);
-    //sprintf(buffer, "La clave publica WOTS PK_%d=Tlen[pk_0,...,pl_len-1]", idx);
+    //sneorv32_uart0_printf(buffer, "La clave publica WOTS PK_%d=Tlen[pk_0,...,pl_len-1]", idx);
     kat_hex(buffer, root, prm->n);
     FIPS_REF(11, 6, "Se establece el campo TYPE de la estructura ADDR ya que se va a resolver el arbol para obtener la raiz del mismo.");
     adrs_set_type_and_clear(ctx, ADRS_TREE);
@@ -385,20 +388,20 @@ static void xmss_pk_from_sig(   slh_ctx_t *ctx, uint8_t *root, uint32_t idx,
         adrs_set_tree_index(ctx, idx >> (k + 1));
         
         if (((idx >> k) & 1) == 0) {
-            //sprintf(buffer,"Se va a calcular el nodo n_%d_%d=H(PK.SEED,ADRS, n_%d_%d||n_%d_%d)",  k+1, idx>>(k+1),k,idx>>k,k,(idx>>k)+1);
+            //sneorv32_uart0_printf(buffer,"Se va a calcular el nodo n_%d_%d=H(PK.SEED,ADRS, n_%d_%d||n_%d_%d)",  k+1, idx>>(k+1),k,idx>>k,k,(idx>>k)+1);
             FIPS_REF(11, 12, buffer);
             prm->h_h(ctx, root, root, auth);
             
         } else {
-            //sprintf(buffer,"Se va a calcular el nodo n_%d_%d=H(PK.SEED,ADRS, n_%d_%d||n_%d_%d)",  k+1, idx>>(k+1),k,(idx>>k)-1,k,(idx>>k));
+            //sneorv32_uart0_printf(buffer,"Se va a calcular el nodo n_%d_%d=H(PK.SEED,ADRS, n_%d_%d||n_%d_%d)",  k+1, idx>>(k+1),k,(idx>>k)-1,k,(idx>>k));
             FIPS_REF(11, 15, buffer);
             prm->h_h(ctx, root, auth, root);
         }
-        //sprintf(buffer,"n_%d_%d",k+1,idx>>k);
+        //sneorv32_uart0_printf(buffer,"n_%d_%d",k+1,idx>>k);
         kat_hex(buffer, root, prm->n);
         auth += n;
     }
-    //sprintf(buffer, "La clave publica del arbol %lu del nivel %d es ", rev8_be64(*((uint64_t *)(ctx->adrs->u32 + 2))), rev8_be32(ctx->adrs->u32[0]));
+    //sneorv32_uart0_printf(buffer, "La clave publica del arbol %lu del nivel %d es ", rev8_be64(*((uint64_t *)(ctx->adrs->u32 + 2))), rev8_be32(ctx->adrs->u32[0]));
     kat_hex(buffer, root, prm->n);
 
 }
@@ -418,20 +421,20 @@ static size_t ht_sign(  slh_ctx_t *ctx, uint8_t *sh, uint8_t *m,
     FIPS_REF(12, 2, "Se establece el campo TREE_ADDRESS de la estructura ADDR con la dirección del arbol que contiene la hoja con la que se firmara la clave publica FORS.");
     adrs_zero(ctx);
     adrs_set_tree_address(ctx, i_tree);
-    //sprintf(buffer,"Se firma la clave publica FORS con la hoja %d del arbol %lu del nivel 0 del hiperarbol",i_leaf, i_tree);
+    //sneorv32_uart0_printf(buffer,"Se firma la clave publica FORS con la hoja %d del arbol %lu del nivel 0 del hiperarbol",i_leaf, i_tree);
     FIPS_REF(12, 3, buffer);
     sx_sz = xmss_sign(ctx, sh, m, i_leaf);
     kat_hex("La firma de la clave publica FORS", sh, (get_len(prm)+ prm->hp)*prm->n); 
     FIPS_REF(12, 6, "Se comienza el a realizar la firma de las raices de los arboles XMSS con el siguiente arbol del hiperarbol");
     for (j = 1; j < prm->d; j++) {
-        //sprintf(buffer,"Se obtiene la clave publica del arbol XMSS(tree_index = %lu) del nivel %d a partir de la firma generada\n", i_tree, j-1);    
+        //sneorv32_uart0_printf(buffer,"Se obtiene la clave publica del arbol XMSS(tree_index = %lu) del nivel %d a partir de la firma generada\n", i_tree, j-1);    
         FIPS_REF(12, 14, buffer);
         xmss_pk_from_sig(ctx, m, i_leaf, sh, m);
         sh += sx_sz;
-        //sprintf(buffer,"Se calcula el indice de la hoja con la que se va a firmar la clave publica del arbol %lu del nivel %d\n", i_tree, j-1);
+        //sneorv32_uart0_printf(buffer,"Se calcula el indice de la hoja con la que se va a firmar la clave publica del arbol %lu del nivel %d\n", i_tree, j-1);
         FIPS_REF(12, 7, buffer);
         i_leaf = i_tree & ((1 << prm->hp) - 1);
-        //sprintf(buffer,"Se calculan el indice del arbol con la que se va a firmar la clave publica del arbol %lu del nivel %d\n", i_tree, j-1);
+        //sneorv32_uart0_printf(buffer,"Se calculan el indice del arbol con la que se va a firmar la clave publica del arbol %lu del nivel %d\n", i_tree, j-1);
         FIPS_REF(12, 8, buffer);
         i_tree >>= prm->hp;
         LOG("La clave publica del nivel %d se firmara con la hoja %d del arbol %lu\n", j-1, i_leaf, i_tree);
@@ -439,10 +442,10 @@ static size_t ht_sign(  slh_ctx_t *ctx, uint8_t *sh, uint8_t *m,
         adrs_set_layer_address(ctx, j);
         FIPS_REF(12, 10, "Se establece el campo TREE_ADDR de la estructura ADDR");
         adrs_set_tree_address(ctx, i_tree);
-        //sprintf(buffer, "Se firma la clave publica del nivel %d se firmara con la hoja %d del nivel %d", j-1,i_leaf,j);
+        //sneorv32_uart0_printf(buffer, "Se firma la clave publica del nivel %d se firmara con la hoja %d del nivel %d", j-1,i_leaf,j);
         FIPS_REF(12, 11, buffer);
         xmss_sign( ctx, sh, m, i_leaf);
-        //sprintf(buffer, "La firma de la clave publica del arbol XMSS del nivel %d, con la hoja %d del arbol %lu del nivel %d, es",j-1, i_leaf, i_tree,j );
+        //sneorv32_uart0_printf(buffer, "La firma de la clave publica del arbol XMSS del nivel %d, con la hoja %d del arbol %lu del nivel %d, es",j-1, i_leaf, i_tree,j );
         kat_hex(buffer, sh, (get_len(prm)+ prm->hp)*prm->n);
     }
 
@@ -482,9 +485,9 @@ static bool ht_verify(  slh_ctx_t *ctx, const uint8_t *m,
     uint8_t t;
     t = 0;
     for (i = 0; i < prm->n; i++) {
-        //sprintf(buffer, "node[%d]", i);
+        //sneorv32_uart0_printf(buffer, "node[%d]", i);
         kat_hex(buffer,node+i,1);
-        //sprintf(buffer, "PK.ROOT[%d]", i);
+        //sneorv32_uart0_printf(buffer, "PK.ROOT[%d]", i);
         kat_hex(buffer,(ctx->pk_root)+i,1);
         t |= node[i] ^ ctx->pk_root[i];
     }
@@ -529,7 +532,7 @@ static void fors_node(  slh_ctx_t *ctx, uint8_t *node,
             LOG("El indice del nodo, del nivel %d, del camino de autenticacion calculado actualmente es %d\n", rev8_be32(ctx->adrs->u32[6]),adrs_get_tree_index(ctx));
             p--;
             h0 = p > 0 ? h[p - 1] : node;
-            //sprintf(buffer, "Se esta calculando el nodo H_%d(nivel%d) = H(PK.SEED,ADRS,H_%d(nivel %d)||H_%d(nivel %d))", adrs_get_tree_index(ctx), k+1, adrs_get_tree_index(ctx)*2,k, adrs_get_tree_index(ctx)*2 + 1,k);
+            //sneorv32_uart0_printf(buffer, "Se esta calculando el nodo H_%d(nivel%d) = H(PK.SEED,ADRS,H_%d(nivel %d)||H_%d(nivel %d))", adrs_get_tree_index(ctx), k+1, adrs_get_tree_index(ctx)*2,k, adrs_get_tree_index(ctx)*2 + 1,k);
             FIPS_REF(15, 11, buffer);
             prm->h_h(ctx, h0, h0, h[p]);
         }
@@ -560,10 +563,10 @@ static size_t fors_sign(slh_ctx_t *ctx, uint8_t *sf, const uint8_t *md)
         adrs_set_tree_index(ctx, (i << prm->a) + vi[i]);
         LOG("El nodo al que apunta m_%d es: %d\n", i, adrs_get_tree_index(ctx));
         prm->fors_hash(ctx, sf, 0);
-        //sprintf(buffer, "sk_%d", adrs_get_tree_index(ctx));
+        //sneorv32_uart0_printf(buffer, "sk_%d", adrs_get_tree_index(ctx));
         kat_hex(buffer, sf, prm->n);
         sf += n;
-        //sprintf(buffer, "Se va a proceder a calcular el camino de autenticacion AUTH(%d) para la clave privada FORS sk_%d_%d", i, i, vi[i]);
+        //sneorv32_uart0_printf(buffer, "Se va a proceder a calcular el camino de autenticacion AUTH(%d) para la clave privada FORS sk_%d_%d", i, i, vi[i]);
         FIPS_REF(16,5,buffer);
         for (j = 0; j < prm->a; j++) {
             LOG("Se esta calculando el nodo H_%d(Este indice hace referencia al nodo dentro del arbol k. No se corresponde con TREE_INDEX) del camnio de autenticacion del arbol %d en el nivel %d", vi[i]>>j ^ 1, i, j);
@@ -571,7 +574,7 @@ static size_t fors_sign(slh_ctx_t *ctx, uint8_t *sf, const uint8_t *md)
             s = (vi[i] >> j) ^ 1;
             FIPS_REF(16, 7, "Se procede a calcular el siguiente nodo del camino de autenticacion.");
             fors_node(  ctx, sf, (i << (prm->a - j)) + s, j);
-            //sprintf(buffer, "H_%d(nivel %d)", (i << (prm->a - j)) + s, j);
+            //sneorv32_uart0_printf(buffer, "H_%d(nivel %d)", (i << (prm->a - j)) + s, j);
             kat_hex(buffer, sf, prm->n); 
             sf += n;
         }
@@ -599,19 +602,19 @@ static void fors_pk_from_sig(   slh_ctx_t *ctx, uint8_t *pk,
 
     node = root;
     for (i = 0; i < prm->k; i++) {
-        //sprintf(buffer, "Se establece el campo TREE_HEIGHT de ADDR a 0 ya que se va a calcular F=(PK.SEED,ADRS,sk_%d)", i);
+        //sneorv32_uart0_printf(buffer, "Se establece el campo TREE_HEIGHT de ADDR a 0 ya que se va a calcular F=(PK.SEED,ADRS,sk_%d)", i);
         FIPS_REF(17, 4, buffer);
         adrs_set_tree_height(ctx, 0);
 
         idx = (i << prm->a) + vi[i];
-        //sprintf(buffer, "Se establece el campo TREE_INDEX de la estructura ADDR a %d", idx);
+        //sneorv32_uart0_printf(buffer, "Se establece el campo TREE_INDEX de la estructura ADDR a %d", idx);
         FIPS_REF(17,5, buffer);
         adrs_set_tree_index(ctx, idx);
-        //sprintf(buffer, "Se calcula F_%d = (PK.SEED,ADRS,sk_%d_%d)", idx, i, idx);
+        //sneorv32_uart0_printf(buffer, "Se calcula F_%d = (PK.SEED,ADRS,sk_%d_%d)", idx, i, idx);
         FIPS_REF(17, 6, buffer);
         prm->h_f(ctx, node, sf);
         sf += n;
-        //sprintf(buffer, "Se va a utilizar un bucle for para el calculo de la raiz del arbol %d del esquema FORS",i);
+        //sneorv32_uart0_printf(buffer, "Se va a utilizar un bucle for para el calculo de la raiz del arbol %d del esquema FORS",i);
         FIPS_REF(17, 8, buffer);
         for (j = 0; j < prm->a; j++) {
             LOG("Se va a calcular el nodo H_%d(nivel %d) del arbol %d del esquema FORS", idx >> (j+1), j+1, i);
@@ -619,7 +622,7 @@ static void fors_pk_from_sig(   slh_ctx_t *ctx, uint8_t *pk,
             adrs_set_tree_height(ctx, j + 1);
             FIPS_REF(17,11, "Se establece el campo TREE_INDEX de la estructura ADDR.");
             adrs_set_tree_index(ctx, idx >> (j + 1));
-            //sprintf(buffer, "Se va a calcular el nodo H_%d(nivel %d) = H(PK.SEED,ADRS,H_%d(nivel %d)||H_%d(nivel %d))", idx >> (j+1), j+1, idx >> j,j,(idx >> j)+1,j);
+            //sneorv32_uart0_printf(buffer, "Se va a calcular el nodo H_%d(nivel %d) = H(PK.SEED,ADRS,H_%d(nivel %d)||H_%d(nivel %d))", idx >> (j+1), j+1, idx >> j,j,(idx >> j)+1,j);
             FIPS_REF(17, 10, buffer);
             if (((vi[i] >> j) & 1) == 0) {
                 prm->h_h(ctx, node, node, sf);
@@ -628,7 +631,7 @@ static void fors_pk_from_sig(   slh_ctx_t *ctx, uint8_t *pk,
             }
             sf += n;
         }
-        //sprintf(buffer, "La clave publica FORS pk_%d", i);
+        //sneorv32_uart0_printf(buffer, "La clave publica FORS pk_%d", i);
         kat_hex(buffer, node, prm->n);
         node += n;
     }
@@ -669,12 +672,12 @@ int slh_keygen(uint8_t *pk, uint8_t *sk,
     size_t      n = prm->n;
 
     #ifdef DEBUG_LOG
-    printf("--------------------------------------------------------------\n");
-    printf("------Se generan SK.SEED, SK.PRF y PK.SEED usando el DBRG-----\n");
-    printf("--------------------------------------------------------------\n\n");
-    printf("[FILE]->[FUNCTION]:[LINE] %s->%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
+    neorv32_uart0_printf("--------------------------------------------------------------\n");
+    neorv32_uart0_printf("------Se generan SK.SEED, SK.PRF y PK.SEED usando el DBRG-----\n");
+    neorv32_uart0_printf("--------------------------------------------------------------\n\n");
+    neorv32_uart0_printf("[FILE]->[FUNCTION]:[LINE] %s->%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     #endif
-    rbg(sk, 3 * n);                     //  SK.seed || SK.prf || PK.seed
+    // rbg(sk, 3 * n);                     //  SK.seed || SK.prf || PK.seed
     kat_hex("SK.SEED", sk, prm->n);
     kat_hex("SK.PRF", sk + 1*prm->n, prm->n);
     kat_hex("PK.SEED", sk + 2*prm->n, prm->n);
@@ -682,16 +685,16 @@ int slh_keygen(uint8_t *pk, uint8_t *sk,
     memset(sk + 3 * n, 0x00, n);        //  PK.root not generated yet
     kat_hex("PK", pk, slh_pk_sz(prm));
     kat_hex("SK", sk, slh_sk_sz(prm));
-    printf("\n");
+    neorv32_uart0_printf("\n");
     prm->mk_ctx(&ctx, NULL, sk, prm);   //  fill in partial
 
     #ifdef DEBUG_LOG
-    printf("--------------------------------------------------------------\n");
-    printf("--------------------Generacion de PK.ROOT---------------------\n");
-    printf("--------------------------------------------------------------\n\n");
-    printf("--------------------------------------------------------------\n");
-    printf("------------Inicializacion de la estructura ADDRS-------------\n");
-    printf("--------------------------------------------------------------\n\n");
+    neorv32_uart0_printf("--------------------------------------------------------------\n");
+    neorv32_uart0_printf("--------------------Generacion de PK.ROOT---------------------\n");
+    neorv32_uart0_printf("--------------------------------------------------------------\n\n");
+    neorv32_uart0_printf("--------------------------------------------------------------\n");
+    neorv32_uart0_printf("------------Inicializacion de la estructura ADDRS-------------\n");
+    neorv32_uart0_printf("--------------------------------------------------------------\n\n");
     #endif
     FIPS_REF(18, 0, "Se inicializa la estructutra ADDR");
     adrs_zero(&ctx);
@@ -699,7 +702,7 @@ int slh_keygen(uint8_t *pk, uint8_t *sk,
     print_addr(&ctx);
     xmss_node(&ctx, pk_root, 0, prm->hp, 0);
     #ifdef DEBUG_LOG
-    printf("--------------------------------------------------------------\n\n");
+    neorv32_uart0_printf("--------------------------------------------------------------\n\n");
     #endif
     kat_hex("PK.ROOT", pk_root, prm->n);
     //  fill pk_root
