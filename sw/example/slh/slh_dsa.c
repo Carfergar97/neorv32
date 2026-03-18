@@ -4,6 +4,7 @@
 //  === FIPS 205 (ipd) Stateless Hash-Based Digital Signature Standard
 
 #include "slh_dsa.h"
+#include "neorv32_uart.h"
 #include "plat_local.h"
 #include "slh_ctx.h"
 #include "slh_adrs.h"
@@ -25,7 +26,7 @@ static void kat_hex(const char *label,
     size_t i;
     neorv32_uart0_printf("%s = ", label);
     for (i = 0; i < xlen; i++) {
-        neorv32_uart0_printf("%02X", x[i]);
+        neorv32_uart0_printf("%X", x[i]);
     }
     neorv32_uart0_printf("\n");
     #endif
@@ -422,13 +423,15 @@ static size_t ht_sign(  slh_ctx_t *ctx, uint8_t *sh, uint8_t *m,
     adrs_zero(ctx);
     adrs_set_tree_address(ctx, i_tree);
     //sneorv32_uart0_printf(buffer,"Se firma la clave publica FORS con la hoja %d del arbol %lu del nivel 0 del hiperarbol",i_leaf, i_tree);
-    FIPS_REF(12, 3, buffer);
+    FIPS_REF(12, 3, buffer); 
+    neorv32_uart0_printf("Se va a firmar la clave publica FORS\n");
     sx_sz = xmss_sign(ctx, sh, m, i_leaf);
     kat_hex("La firma de la clave publica FORS", sh, (get_len(prm)+ prm->hp)*prm->n); 
     FIPS_REF(12, 6, "Se comienza el a realizar la firma de las raices de los arboles XMSS con el siguiente arbol del hiperarbol");
     for (j = 1; j < prm->d; j++) {
         //sneorv32_uart0_printf(buffer,"Se obtiene la clave publica del arbol XMSS(tree_index = %lu) del nivel %d a partir de la firma generada\n", i_tree, j-1);    
         FIPS_REF(12, 14, buffer);
+        neorv32_uart0_printf("Se calcula la clave publica del arbol XMSS del nivel %d\n", j-1);
         xmss_pk_from_sig(ctx, m, i_leaf, sh, m);
         sh += sx_sz;
         //sneorv32_uart0_printf(buffer,"Se calcula el indice de la hoja con la que se va a firmar la clave publica del arbol %lu del nivel %d\n", i_tree, j-1);
@@ -444,6 +447,7 @@ static size_t ht_sign(  slh_ctx_t *ctx, uint8_t *sh, uint8_t *m,
         adrs_set_tree_address(ctx, i_tree);
         //sneorv32_uart0_printf(buffer, "Se firma la clave publica del nivel %d se firmara con la hoja %d del nivel %d", j-1,i_leaf,j);
         FIPS_REF(12, 11, buffer);
+        neorv32_uart0_printf("Se va a firmar la clave publica del arbol del nivel %d\n", j-1);
         xmss_sign( ctx, sh, m, i_leaf);
         //sneorv32_uart0_printf(buffer, "La firma de la clave publica del arbol XMSS del nivel %d, con la hoja %d del arbol %lu del nivel %d, es",j-1, i_leaf, i_tree,j );
         kat_hex(buffer, sh, (get_len(prm)+ prm->hp)*prm->n);
@@ -756,6 +760,7 @@ size_t slh_do_sign( slh_ctx_t *ctx, uint8_t *sig, const uint8_t *digest)
     adrs_set_key_pair_address(ctx, i_leaf);
 
     //  SIG_FORS
+    neorv32_uart0_printf("Se viene firma FORS\n");
     FIPS_REF(19, 14, "Se va a proceder a realizar la firma FORS de md.");
     sig_sz  = fors_sign(ctx, sig, md);
     FIPS_REF(19, 16, "Se va a proceder a obtener la clave publica FORS, a partir de la firma FORS previa.\n Esta clave publica sera la que se firme usando el hiperarbol de SLH-DSA.");
@@ -765,6 +770,7 @@ size_t slh_do_sign( slh_ctx_t *ctx, uint8_t *sig, const uint8_t *digest)
     //  SIG_HT
     sig +=  sig_sz;
     FIPS_REF(19, 17, "Se genera el resto de la firma mediante la firma de la clave publica FORS con el hiperarbol");
+    neorv32_uart0_printf("Se viene firmita con el hiperarbol\n");
     sig_sz  += ht_sign(ctx, sig, pk_fors, i_tree, i_leaf);
 
     return sig_sz;
@@ -800,7 +806,9 @@ size_t slh_sign(uint8_t *sig, const uint8_t *m, size_t m_sz,
     kat_hex("digest", digest, prm->m);
     
     //  create FORS and HT signature parts
+    neorv32_uart0_printf("slh_do_sign entry point\n");
     sig_sz += slh_do_sign(&ctx, sig + sig_sz, digest);
+    neorv32_uart0_printf("Exit slh_do_sing\n");
 
     return sig_sz;
 }

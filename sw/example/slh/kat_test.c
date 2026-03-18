@@ -3,6 +3,7 @@
 
 //  === KAT Testing for SLH-DSA
 
+#include "neorv32_uart.h"
 #ifndef SLOTH
 
 // #include <stdio.h>
@@ -37,13 +38,14 @@ static void kat_hex(const char *label,
     size_t i;
     neorv32_uart0_printf("%s = ", label);
     for (i = 0; i < xlen; i++) {
-        neorv32_uart0_printf("%02X", x[i]);
+        neorv32_uart0_printf("%X", x[i]);
     }
     neorv32_uart0_printf("\n");
 }
 
 int kat_test(const slh_param_t *iut, int katnum)
 {
+    neorv32_uart0_printf("DBG0\n");
     int fail = 0;
 
 
@@ -78,11 +80,11 @@ int kat_test(const slh_param_t *iut, int katnum)
     // fneorv32_uart0_printf(fh, "# SPHINCS+\n\n");
 
     //  initialize kat seed drbg
-    for (int i = 0; i < 48; i++) {
-        seed[i] = i;
-    }
+    // for (int i = 0; i < 48; i++) {
+    //     seed[i] = i;
+    // }
     // //aes_256ctr_xof_init(&kat_drbg, seed);
-
+    neorv32_uart0_printf("DBG1\n");
     pk_sz = slh_pk_sz(iut);
     // assert(sizeof(pk) >= pk_sz);
     sk_sz = slh_sk_sz(iut);
@@ -115,7 +117,10 @@ int kat_test(const slh_param_t *iut, int katnum)
         neorv32_uart0_printf("**************************************************************\n\n");
         #endif /* ifdef DEBUG_LOG */
 
+        neorv32_uart0_printf("slh_keygen entry point\n");
         slh_keygen(pk, sk, &iut_randombytes, iut);
+        neorv32_uart0_printf("Exit slh_keygen\n");
+        kat_hex("pk", pk, 2*32);
 
         #ifdef DEBUG_LOG
         neorv32_uart0_printf("**************************************************************\n");
@@ -137,7 +142,9 @@ int kat_test(const slh_param_t *iut, int katnum)
         #ifdef DEBUG_LOG
         FIPS_REF(19, 0, "Begining of a the digital signature process.");
         #endif /* ifdef DEBUG_LOG */
+        neorv32_uart0_printf("slh_sign entry point\n");
         sm_sz = slh_sign(sm, msg, msg_sz, sk, &iut_randombytes, iut);
+        neorv32_uart0_printf("exit slh_sign\n");
         #ifdef DEBUG_LOG
         neorv32_uart0_printf("**************************************************************\n");
         neorv32_uart0_printf("**************************************************************\n\n");
@@ -214,7 +221,9 @@ int main(void)
     // if  (argc == 2 &&
     //     (iut_n = atoi(argv[1])) >= 0 &&
     //     iut_n < 12) {
-        // fail += kat_test(test_iut[iut_n], 1);
+    neorv32_uart0_printf("kat_test entry point\n");
+  neorv32_uart0_printf("SLH-DSA algorithm: %s\n", slh_alg_id(test_iut[iut_n]));
+    fail += kat_test(test_iut[iut_n], 1);
     // } else {
     //     for (iut_n = 0; test_iut[iut_n] != NULL; iut_n++) {
     //         fail += kat_test(test_iut[iut_n], KATNUM);

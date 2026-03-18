@@ -195,9 +195,9 @@ static void shake_chain( slh_ctx_t *ctx, uint8_t *tmp, const uint8_t *x,
         memcpy(ks, ctx->pk_seed, n);        //  PK.seed
         #ifdef DEBUG_LOG
         FIPS_REF(6, 7, "Se incrementa el campo HASH_ADDRES de la estructura ADDR");
-        adrs_set_hash_address(ctx, i + j);  //  address
         print_addr(ctx);
         #endif
+        adrs_set_hash_address(ctx, i + j);  //  address
         memcpy(ks + n8, (const uint8_t *) ctx->adrs->u8, 32);
 
         //  padding

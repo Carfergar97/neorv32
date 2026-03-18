@@ -11,13 +11,13 @@ MARCH = rv32i_zicsr_zifencei
 EFFORT = -Os
 
 # Add extended debug symbols
-USER_FLAGS += -ggdb -gdwarf-3
+USER_FLAGS += -ggdb -gdwarf-3 -Wstack-usage=8192
 
 # Adjust processor IMEM size
 USER_FLAGS += -Wl,--defsym,__neorv32_rom_size=64k
 
 # Adjust processor DMEM size
-USER_FLAGS += -Wl,--defsym,__neorv32_ram_size=8k
+USER_FLAGS += -Wl,--defsym,__neorv32_ram_size=64k
 
 # Adjust maximum heap size
 #USER_FLAGS += -Wl,--defsym,__neorv32_heap_size=1k
