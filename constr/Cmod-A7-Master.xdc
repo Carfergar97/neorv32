@@ -12,9 +12,9 @@ set_property -dict { PACKAGE_PIN A17   IOSTANDARD LVCMOS33 } [get_ports { locked
 #set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports { led[1] }]; #IO_L13P_T2_MRCC_16 Sch=led[2]
 
 ## RGB LED
-#set_property -dict { PACKAGE_PIN B17   IOSTANDARD LVCMOS33 } [get_ports { led0_b }]; #IO_L14N_T2_SRCC_16 Sch=led0_b
-#set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports { led0_g }]; #IO_L13N_T2_MRCC_16 Sch=led0_g
-#set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports { led0_r }]; #IO_L14P_T2_SRCC_16 Sch=led0_r
+set_property -dict { PACKAGE_PIN B17   IOSTANDARD LVCMOS33 } [get_ports { rgb_led_o[0] }]; #IO_L14N_T2_SRCC_16 Sch=led0_b
+set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports { rgb_led_o[1] }]; #IO_L13N_T2_MRCC_16 Sch=led0_g
+set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports { rgb_led_o[2] }]; #IO_L14P_T2_SRCC_16 Sch=led0_r
 
 ## Buttons
 set_property -dict { PACKAGE_PIN A18   IOSTANDARD LVCMOS33 } [get_ports { rstn_i }]; #IO_L19N_T3_VREF_16 Sch=btn[0]
