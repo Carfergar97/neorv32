@@ -228,6 +228,7 @@ const slh_param_t *test_iut[] = {&slh_dsa_shake_128s,
                                  &slh_dsa_shake_192f,
                                  &slh_dsa_shake_256s,
                                  &slh_dsa_shake_256f,
+                                 &slh_dsa_ascon_128s,
                                  NULL};
 
 int main(void) {
@@ -235,7 +236,7 @@ int main(void) {
   neorv32_uart0_setup(BAUD_RATE, 0);
   neorv32_uart0_puts("SLH-DSA in NEORV32\n");
   int fail = 0;
-  int iut_n = 0;
+  int iut_n = 6;
 
   // if  (argc == 2 &&
   //     (iut_n = atoi(argv[1])) >= 0 &&
