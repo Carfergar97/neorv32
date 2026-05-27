@@ -10,6 +10,7 @@
 #include "sha3_api.h"
 #include "slh_adrs.h"
 #include <stdio.h>
+#include "neorv32_uart.h"
 #include "neorv32.h"
 #include "log.h"
 
@@ -289,6 +290,13 @@ const slh_param_t slh_dsa_shake_128s = {    .alg_id ="SLH-DSA-SHAKE-128s",
     .h_f= shake_f, .h_h= shake_h, .h_t= shake_t
 };
 
+const slh_param_t slh_dsa_shake_128_24 = {    .alg_id ="SLH-DSA-SHAKE-128-24s",
+    .n= 16, .h= 22, .d= 1, .hp= 22, .a= 24, .k= 6, .lg_w= 2, .m= 21,
+    .mk_ctx= shake_mk_ctx, .chain= shake_chain,
+    .wots_chain= shake_wots_chain, .fors_hash= shake_fors_hash,
+    .h_msg= shake_h_msg, .prf= shake_prf, .prf_msg= shake_prf_msg,
+    .h_f= shake_f, .h_h= shake_h, .h_t= shake_t
+};
 const slh_param_t slh_dsa_shake_128f = {    .alg_id ="SLH-DSA-SHAKE-128f",
     .n= 16, .h= 66, .d= 22, .hp= 3, .a= 6, .k= 33, .lg_w= 4, .m= 34,
     .mk_ctx= shake_mk_ctx, .chain= shake_chain,
@@ -299,6 +307,14 @@ const slh_param_t slh_dsa_shake_128f = {    .alg_id ="SLH-DSA-SHAKE-128f",
 
 const slh_param_t slh_dsa_shake_192s = {    .alg_id ="SLH-DSA-SHAKE-192s",
     .n= 24, .h= 63, .d= 7, .hp= 9, .a= 14, .k= 17, .lg_w= 4, .m= 39,
+    .mk_ctx= shake_mk_ctx, .chain= shake_chain,
+    .wots_chain= shake_wots_chain, .fors_hash= shake_fors_hash,
+    .h_msg= shake_h_msg, .prf= shake_prf, .prf_msg= shake_prf_msg,
+    .h_f= shake_f, .h_h= shake_h, .h_t= shake_t
+};
+
+const slh_param_t slh_dsa_shake_192_24= {    .alg_id ="SLH-DSA-SHAKE-192-24s",
+    .n= 24, .h= 21, .d= 1, .hp= 21, .a= 25, .k= 9, .lg_w= 3, .m= 32,
     .mk_ctx= shake_mk_ctx, .chain= shake_chain,
     .wots_chain= shake_wots_chain, .fors_hash= shake_fors_hash,
     .h_msg= shake_h_msg, .prf= shake_prf, .prf_msg= shake_prf_msg,
@@ -321,6 +337,13 @@ const slh_param_t slh_dsa_shake_256s = {    .alg_id ="SLH-DSA-SHAKE-256s",
     .h_f= shake_f, .h_h= shake_h, .h_t= shake_t
 };
 
+const slh_param_t slh_dsa_shake_256_24 = {    .alg_id ="SLH-DSA-SHAKE-256-24s",
+    .n= 32, .h= 21, .d= 1, .hp= 21, .a= 25, .k= 12, .lg_w= 2, .m= 41,
+    .mk_ctx= shake_mk_ctx, .chain= shake_chain,
+    .wots_chain= shake_wots_chain, .fors_hash= shake_fors_hash,
+    .h_msg= shake_h_msg, .prf= shake_prf, .prf_msg= shake_prf_msg,
+    .h_f= shake_f, .h_h= shake_h, .h_t= shake_t
+};
 const slh_param_t slh_dsa_shake_256f = {    .alg_id ="SLH-DSA-SHAKE-256f",
     .n= 32, .h= 68, .d= 17, .hp= 4, .a= 9, .k= 35, .lg_w= 4, .m= 49,
     .mk_ctx= shake_mk_ctx, .chain= shake_chain,

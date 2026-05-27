@@ -30,6 +30,10 @@ extern const slh_param_t slh_dsa_shake_256s;
 extern const slh_param_t slh_dsa_sha2_256f;
 extern const slh_param_t slh_dsa_shake_256f;
 extern const slh_param_t slh_dsa_ascon_128s;
+extern const slh_param_t slh_dsa_ascon_128_24;
+extern const slh_param_t slh_dsa_shake_128_24;
+extern const slh_param_t slh_dsa_shake_192_24;
+extern const slh_param_t slh_dsa_shake_256_24;
 
 //  === API
 
