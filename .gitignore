@@ -41,3 +41,6 @@ riscof_work
 # generated documentation stuff
 /docs/doxygen_build/
 /docs/public/
+
+# added directories
+vivado/
