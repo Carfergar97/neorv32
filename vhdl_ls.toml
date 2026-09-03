@@ -1,0 +1,6 @@
+[libraries]
+neorv32.files=[
+  "rtl/core/*",
+  "rtl/test_setups/*",
+  "rtl/system_integration/*"
+]
