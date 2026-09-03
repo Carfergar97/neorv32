@@ -104,7 +104,7 @@ neorv32_uart0_printf("# SPHINCS+\n\n");
         neorv32_uart0_printf("count = %d\r\n", count);
         // Con este código se inicializa el drbg para generar los datos del test.
         aes256ctr_xof(&kat_drbg, seed, 48);
-        kat_hex(stdout, "seed", seed, 48);//fh
+        kat_hex("seed", seed, 48);//fh
         //---------------------------------------------------------------------------------------------------------
         msg_sz = (count + 1) * 33;
         //fprintf(fh, "mlen = %zu\n", msg_sz);
@@ -158,8 +158,8 @@ neorv32_uart0_printf("# SPHINCS+\n\n");
         kat_hex(stdout, "pk", pk, pk_sz);
         kat_hex(stdout, "sk", sk, sk_sz);
         #endif /* ifdef DEBUG_LOG */
-        kat_hex(stdout, "pk", pk, pk_sz);//fh
-        kat_hex(stdout, "sk", sk, sk_sz);
+        // kat_hex(stdout, "pk", pk, pk_sz);//fh
+        // kat_hex(stdout, "sk", sk, sk_sz);
         //--------------------------------------------------------------------------
         key_gen_time = neorv32_cpu_get_cycle()-key_gen_time;
         key_gen_time_s = (uint32_t)(key_gen_time / 100000000);
