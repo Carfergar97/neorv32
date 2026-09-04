@@ -63,7 +63,7 @@ begin
   port map (
     -- Global control --
     clk_i       => clk_i,        -- global clock, rising edge
-    rstn_i      => rstn_i,       -- global reset, low-active, async
+    rstn_i      => w_rstn,       -- global reset, low-active, async
     -- primary UART0 (available if IO_UART0_EN = true) --
     uart0_txd_o => uart0_txd_o,  -- UART0 send data
     uart0_rxd_i => uart0_rxd_i   -- UART0 receive data
