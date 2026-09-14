@@ -360,26 +360,52 @@ begin
   -- -------------------------------------------------------------------------------------------
   neorv32_cpu_alu_crypto_enabled:
   if RISCV_ISA_Zknd or RISCV_ISA_Zkne or RISCV_ISA_Zknh or RISCV_ISA_Zksed or RISCV_ISA_Zksh generate
-    neorv32_cpu_alu_crypto_inst: entity neorv32.neorv32_cpu_alu_crypto
-    generic map (
-      EN_ZKND  => RISCV_ISA_Zknd,  -- NIST AES decryption extension
-      EN_ZKNE  => RISCV_ISA_Zkne,  -- NIST AES encryption extension
-      EN_ZKNH  => RISCV_ISA_Zknh,  -- NIST hash extension
-      EN_ZKSED => RISCV_ISA_Zksed, -- ShangMi block cipher extension
-      EN_ZKSH  => RISCV_ISA_Zksh   -- ShangMi hash extension
-    )
-    port map (
-      -- global control --
-      clk_i   => clk_i,        -- global clock, rising edge
-      rstn_i  => rstn_i,       -- global reset, low-active, async
-      ctrl_i  => ctrl_i,       -- main control bus
-      -- data input --
-      rs1_i   => rs1_i,        -- register source 1
-      rs2_i   => rs2_i,        -- register source 2
-      -- result and status --
-      res_o   => cp_result(6), -- operation result
-      valid_o => cp_valid(6)   -- data output valid
-    );
+  DCIS_2026_MOD_enabled:
+    if DCIS_ZKnd_mod generate
+    neorv32_cpu_alu_crypto_inst: entity neorv32.neorv32_cpu_alu_crypto(neorv32_cpu_alu_crypto_rtl_mod)
+       generic map (
+         EN_ZKND  => RISCV_ISA_Zknd,  -- NIST AES decryption extension
+         EN_ZKNE  => RISCV_ISA_Zkne,  -- NIST AES encryption extension
+         EN_ZKNH  => RISCV_ISA_Zknh,  -- NIST hash extension
+         EN_ZKSED => RISCV_ISA_Zksed, -- ShangMi block cipher extension
+         EN_ZKSH  => RISCV_ISA_Zksh   -- ShangMi hash extension
+       )
+       port map (
+         -- global control --
+         clk_i   => clk_i,        -- global clock, rising edge
+         rstn_i  => rstn_i,       -- global reset, low-active, async
+         ctrl_i  => ctrl_i,       -- main control bus
+         -- data input --
+         rs1_i   => rs1_i,        -- register source 1
+         rs2_i   => rs2_i,        -- register source 2
+         -- result and status --
+         res_o   => cp_result(6), -- operation result
+         valid_o => cp_valid(6)   -- data output valid
+       );
+    end generate;
+    DCIS_2026_MOD_disabled:
+    if not DCIS_ZKnd_mod generate
+    neorv32_cpu_alu_crypto_inst: entity neorv32.neorv32_cpu_alu_crypto(neorv32_cpu_alu_crypto_rtl)
+       generic map (
+         EN_ZKND  => RISCV_ISA_Zknd,  -- NIST AES decryption extension
+         EN_ZKNE  => RISCV_ISA_Zkne,  -- NIST AES encryption extension
+         EN_ZKNH  => RISCV_ISA_Zknh,  -- NIST hash extension
+         EN_ZKSED => RISCV_ISA_Zksed, -- ShangMi block cipher extension
+         EN_ZKSH  => RISCV_ISA_Zksh   -- ShangMi hash extension
+       )
+       port map (
+         -- global control --
+         clk_i   => clk_i,        -- global clock, rising edge
+         rstn_i  => rstn_i,       -- global reset, low-active, async
+         ctrl_i  => ctrl_i,       -- main control bus
+         -- data input --
+         rs1_i   => rs1_i,        -- register source 1
+         rs2_i   => rs2_i,        -- register source 2
+         -- result and status --
+         res_o   => cp_result(6), -- operation result
+         valid_o => cp_valid(6)   -- data output valid
+       );
+    end generate;    
   end generate;
 
   neorv32_cpu_alu_crypto_disabled:
