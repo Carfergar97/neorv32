@@ -20,7 +20,9 @@ entity neorv32_cmoda7_test_setup_bootloader is
     -- adapt these for your setup --
     CLOCK_FREQUENCY : natural := 12000000; -- clock frequency of clk_i in Hz
     IMEM_SIZE       : natural := 16*1024;   -- size of processor-internal instruction memory in bytes
-    DMEM_SIZE       : natural := 8*1024     -- size of processor-internal data memory in bytes
+    DMEM_SIZE       : natural := 8*1024;     -- size of processor-internal data memory in bytes
+    DCIS_ZKnd_mod   : boolean := false
+    
   );
   port (
     -- Global control --
@@ -50,6 +52,8 @@ begin
     RISCV_ISA_C      => true,              -- implement compressed extension?
     RISCV_ISA_M      => true,              -- implement mul/div extension?
     RISCV_ISA_Zicntr => true,              -- implement base counters?
+    RISCV_ISA_Zkne   => true,
+    RISCV_ISA_Zknd   => true,
     -- Internal Instruction memory --
     IMEM_EN          => true,              -- implement processor-internal instruction memory
     IMEM_SIZE        => IMEM_SIZE, -- size of processor-internal instruction memory in bytes
@@ -58,7 +62,8 @@ begin
     DMEM_SIZE        => DMEM_SIZE, -- size of processor-internal data memory in bytes
     -- Processor peripherals --
     IO_CLINT_EN      => true,              -- implement core local interruptor (CLINT)?
-    IO_UART0_EN      => true               -- implement primary universal asynchronous receiver/transmitter (UART0)?
+    IO_UART0_EN      => true,               -- implement primary universal asynchronous receiver/transmitter (UART0)?
+    DCIS_ZKnd_mod    => DCIS_ZKnd_mod
   )
   port map (
     -- Global control --

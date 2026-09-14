@@ -1025,7 +1025,9 @@ package neorv32_package is
     -- Instruction Tracer (TRACER) --
     IO_TRACER_EN        : boolean                        := false;
     IO_TRACER_BUFFER    : natural range 1 to 2**15       := 1;
-    IO_TRACER_SIMLOG_EN : boolean                        := false
+    IO_TRACER_SIMLOG_EN : boolean                        := false;
+    -- DCIS-2026 Specific --
+    DCIS_ZKnd_mod       : boolean                        := false
   );
   port (
     -- Global control --

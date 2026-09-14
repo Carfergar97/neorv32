@@ -180,7 +180,9 @@ entity neorv32_top is
     -- Instruction Tracer (TRACER) --
     IO_TRACER_EN        : boolean                        := false;         -- implement instruction tracer
     IO_TRACER_BUFFER    : natural range 1 to 2**15       := 1;             -- trace buffer depth, has to be a power of two
-    IO_TRACER_SIMLOG_EN : boolean                        := false          -- write full trace log to file (simulation-only)
+    IO_TRACER_SIMLOG_EN : boolean                        := false;          -- write full trace log to file (simulation-only)
+    -- DCIS-2026 Specific --
+    DCIS_ZKnd_mod       : boolean                        := false
   );
   port (
     -- Global control --
@@ -602,7 +604,9 @@ begin
       HPM_NUM_CNTS        => HPM_NUM_CNTS,
       HPM_CNT_WIDTH       => HPM_CNT_WIDTH,
       -- Trigger Module (TM) --
-      NUM_HW_TRIGGERS     => OCD_NUM_HW_TRIGGERS
+      NUM_HW_TRIGGERS     => OCD_NUM_HW_TRIGGERS,
+      -- DCIS-2026 Specific --
+      DCIS_ZKnd_mod => DCIS_ZKnd_mod
     )
     port map (
       -- global control --

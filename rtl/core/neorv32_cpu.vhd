@@ -75,7 +75,9 @@ entity neorv32_cpu is
     HPM_NUM_CNTS        : natural range 0 to 29          := 0;           -- number of implemented HPM counters
     HPM_CNT_WIDTH       : natural range 0 to 64          := 0;           -- total size of HPM counters
     -- Trigger Module (TM) --
-    NUM_HW_TRIGGERS     : natural range 0 to 16          := 0            -- number of hardware triggers
+    NUM_HW_TRIGGERS     : natural range 0 to 16          := 0;            -- number of hardware triggers
+    -- DCIS-2026 Specific --
+    DCIS_ZKnd_mod       : boolean                        := false
   );
   port (
     -- global control --
@@ -449,7 +451,9 @@ begin
     -- Tuning Options --
     FAST_MUL_EN      => CPU_FAST_MUL_EN,   -- use DSPs for M extension's multiplier
     FAST_MUL_REGS    => CPU_FAST_MUL_REGS, -- number of fast multiplier register stages
-    FAST_SHIFT_EN    => CPU_FAST_SHIFT_EN  -- use barrel shifter for shift operations
+    FAST_SHIFT_EN    => CPU_FAST_SHIFT_EN,  -- use barrel shifter for shift operations
+    -- DCIS-2026 Specific --
+    DCIS_ZKnd_mod => DCIS_ZKnd_mod
   )
   port map (
     -- global control --

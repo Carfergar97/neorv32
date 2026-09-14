@@ -39,7 +39,9 @@ entity neorv32_cpu_alu is
     -- Tuning Options --
     FAST_MUL_EN      : boolean;              -- use DSPs for M extension's multiplier
     FAST_MUL_REGS    : natural range 1 to 3; -- number of fast multiplier register stages
-    FAST_SHIFT_EN    : boolean               -- use barrel shifter for shift operations
+    FAST_SHIFT_EN    : boolean;               -- use barrel shifter for shift operations
+    -- DCIS-2026 Specific --
+    DCIS_ZKnd_mod    : boolean
   );
   port (
     -- global control --
