@@ -58,19 +58,19 @@ int main(){
      /*-- Cifrado AES Version 3 --*/
 	neorv32_uart0_printf("\n\n-- Cifrado AES-128 con Subextensiones Zknd y Zkne (Version 3)--\n");
 	/*Medida Ciclos de Reloj para Cifrado con Subextensiones Zknd y Zknd*/
-        uint32_t ini = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos de reloj antes del cifrado
+        uint64_t ini = neorv32_cpu_get_cycle(); // Lectura ciclos de reloj antes del cifrado
 	CipherV3(in,out,w); // Cifrado
-   	uint32_t fin = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos de reloj después del cifrado
-   	uint32_t ciclos = fin - ini; // Cálculo ciclos de reloj cifrado
+   	uint64_t fin = neorv32_cpu_get_cycle(); // Lectura ciclos de reloj después del cifrado
+   	uint64_t ciclos = fin - ini; // Cálculo ciclos de reloj cifrado
         neorv32_uart0_printf("El numero de ciclos de reloj ha sido: %u\n",ciclos); // Impresión ciclos de reloj
      /*-- Fin Cifrado AES Version 3 --*/
 
      /*-- Descifrado AES Version 3 --*/
         neorv32_uart0_printf("\n\n-- Descifrado AES-128 con Subextensiones Zknd y Zkne (Version 3)--\n");
         /*Medida Ciclos de Reloj para Descifrado con Subextensiones Zknd y Zknd*/
-        ini = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos de reloj antes del cifrado
+        ini = neorv32_cpu_get_cycle(); // Lectura ciclos de reloj antes del descifrado
         InvCipherV3(out,out,w); // Cifrado
-        fin = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos de reloj después del cifrado
+        fin = neorv32_cpu_get_cycle(); // Lectura ciclos de reloj después del descifrado
         ciclos = fin - ini; // Cálculo ciclos de reloj cifrado
         neorv32_uart0_printf("El numero de ciclos de reloj ha sido: %u\n",ciclos); // Impresión ciclos de reloj
         /*Fin Medida Ciclos de Reloj para Descifrado con Subextensiones Zknd y Zknd*/
@@ -81,9 +81,9 @@ int main(){
 	/*Medida Ciclos de reloj para Cifrado con Librería Tiny-AES-C*/
 	struct AES_ctx ctx; // Definición estructura para keyschedule
         AES_init_ctx(&ctx,key); // Cálculo keyschedule
-        ini = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos de reloj antes de cifrado
+        ini = neorv32_cpu_get_cycle(); // Lectura ciclos de reloj antes del descifrado
 	AES_ECB_encrypt(&ctx,in); // Cifrado
-        fin = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos de reloj después de cifrado
+        fin = neorv32_cpu_get_cycle(); // Lectura ciclos de reloj después del descifrado
         ciclos = fin - ini; // Cálculo cilos de reloj cifrado
         neorv32_uart0_printf("El numero de ciclos de reloj ha sido: %u\n",ciclos); // Impresión ciclos de reloj
         /*Fin Medida Ciclos de reloj para Cifrado con Librería Tiny-AES-C*/
@@ -91,9 +91,9 @@ int main(){
 
      /*-- Descifrado AES Tiny AES --*/
 	neorv32_uart0_printf("\n-- Descifrado AES-128 con Tiny-AES-128 --\n");
-        ini = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos antes
+        ini = neorv32_cpu_get_cycle(); // Lectura ciclos antes
         AES_ECB_decrypt(&ctx, in); // <--- ESTA ES LA FUNCIÓN CLAVE        
-        fin = neorv32_cpu_csr_read(CSR_MCYCLE); // Lectura ciclos después        
+        fin = neorv32_cpu_get_cycle(); // Lectura ciclos después        
         ciclos = fin - ini; // Cálculo ciclos       
         neorv32_uart0_printf("El numero de ciclos de reloj ha sido: %u\n", ciclos);
      /*-- Fin Descifrado AES Tiny AES --*/
