@@ -18,7 +18,7 @@ use neorv32.neorv32_package.all;
 entity neorv32_test_setup_bootloader is
   generic (
     -- adapt these for your setup --
-    CLOCK_FREQUENCY : natural := 100000000; -- clock frequency of clk_i in Hz
+    CLOCK_FREQUENCY : natural := 12000000; -- clock frequency of clk_i in Hz
     IMEM_SIZE       : natural := 16*1024;   -- size of processor-internal instruction memory in bytes
     DMEM_SIZE       : natural := 8*1024     -- size of processor-internal data memory in bytes
   );
@@ -27,7 +27,7 @@ entity neorv32_test_setup_bootloader is
     clk_i       : in  std_ulogic; -- global clock, rising edge
     rstn_i      : in  std_ulogic; -- global reset, low-active, async
     -- GPIO --
-    gpio_o      : out std_ulogic_vector(7 downto 0); -- parallel output
+    gpio_o      : out std_ulogic_vector(1-1 downto 0); -- parallel output
     -- UART0 --
     uart0_txd_o : out std_ulogic; -- UART0 send data
     uart0_rxd_i : in  std_ulogic  -- UART0 receive data
@@ -37,6 +37,7 @@ end entity;
 architecture neorv32_test_setup_bootloader_rtl of neorv32_test_setup_bootloader is
 
   signal con_gpio_out : std_ulogic_vector(31 downto 0);
+  signal rstn_w: std_logic;
 
 begin
 
@@ -66,7 +67,7 @@ begin
   port map (
     -- Global control --
     clk_i       => clk_i,        -- global clock, rising edge
-    rstn_i      => rstn_i,       -- global reset, low-active, async
+    rstn_i      => rstn_w,       -- global reset, low-active, async
     -- GPIO (available if IO_GPIO_NUM > 0) --
     gpio_o      => con_gpio_out, -- parallel output
     -- primary UART0 (available if IO_UART0_EN = true) --
@@ -75,7 +76,8 @@ begin
   );
 
   -- GPIO output --
-  gpio_o <= con_gpio_out(7 downto 0);
+  gpio_o <= con_gpio_out(1-1 downto 0);
+  rstn_w <= not rstn_i;
 
 
 end architecture;

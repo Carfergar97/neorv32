@@ -33,100 +33,65 @@ end neorv32_cfs;
 
 architecture neorv32_cfs_rtl of neorv32_cfs is
 
-  -- exemplary CFS interface registers --
-  type cfs_regs_t is array (0 to 3) of std_ulogic_vector(31 downto 0); -- implement 4 read/write registers
-  signal cfs_reg_wr : cfs_regs_t; -- for WRITE accesses
-  signal cfs_reg_rd : cfs_regs_t; -- for READ accesses
+  component keccak_sloth is
+    port (
+      clk   : in  std_ulogic;
+      rst   : in  std_ulogic;
+      sel   : in  std_ulogic;
+      irq   : out std_ulogic;
+      wen   : in  std_ulogic_vector(3 downto 0);
+      addr  : in  std_ulogic_vector(6 downto 0);
+      wdata : in  std_ulogic_vector(31 downto 0);
+      rdata : out std_ulogic_vector(31 downto 0)
+    );
+  end component;
+
+  signal keccak_sel    : std_ulogic;
+  signal keccak_irq    : std_ulogic;
+  signal keccak_wen    : std_ulogic_vector(3 downto 0);
+  signal keccak_addr   : std_ulogic_vector(6 downto 0);
+  signal keccak_wdata  : std_ulogic_vector(31 downto 0);
+  signal keccak_rdata  : std_ulogic_vector(31 downto 0);
+  signal keccak_read_q : std_ulogic;
 
 begin
 
-  -- CFS IOs --------------------------------------------------------------------------------
-  -- -------------------------------------------------------------------------------------------
-  -- By default, the CFS provides two IO ports (cfs_in_i and cfs_out_o) that are available at the processor's top entity.
-  -- These are intended as "conduits" to propagate custom CFS signals between the CFS and the processor top entity.
+  cfs_out_o <= (others => '0'); -- unused
+  irq_o     <= keccak_irq;      -- optional; polling also works
 
-  cfs_out_o <= (others => '0'); -- not used for this minimal example
+  -- Do not alias CFS offsets >= 512 bytes onto Keccak registers.
+  keccak_sel <= bus_req_i.stb;
+  keccak_addr  <= bus_req_i.addr(8 downto 2); -- word offset, 0 ... 127
+  keccak_wdata <= bus_req_i.data;
+  keccak_wen   <= bus_req_i.ben when bus_req_i.rw = '1' else (others => '0');
 
+  keccak_sloth_inst: keccak_sloth
+  port map (
+    clk   => clk_i,
+    rst   => not rstn_i, -- accelerator reset is active-high
+    sel   => keccak_sel,
+    irq   => keccak_irq,
+    wen   => keccak_wen,
+    addr  => keccak_addr,
+    wdata => keccak_wdata,
+    rdata => keccak_rdata
+  );
 
-  -- Interrupt ------------------------------------------------------------------------------
-  -- -------------------------------------------------------------------------------------------
-  -- The CFS features a single interrupt signal, which is connected to the CPU's "fast interrupt" channel 1 (FIRQ1).
-  -- The according CPU interrupt becomes pending as long as <irq_o> is high.
-
-  irq_o <= '0'; -- not used for this minimal example
-
-
-  -- Read/Write Access ----------------------------------------------------------------------
-  -- -------------------------------------------------------------------------------------------
-  -- The CFS provides up to 64kB of memory-mapped address space (16 address bits, byte-addressing) that can be used
-  -- for custom memories and interface registers. According to the CPU's bus protocol, each read or write access has
-  -- to be acknowledged in the following cycle using the <bus_rsp_o.ack_o> signal (or even later if the module needs
-  -- additional time to complete the access). If no ACK is generated, the bus access will time out causing a bus access
-  -- fault exception.
-  --
-  -- [EXAMPLE] Read and write access to the interface registers and bus transfer acknowledge. This example only four
-  -- physical 32-bit read/write register (using the four lowest CFS address bits). The remaining addresses of the CFS
-  -- are not associated with any physical registers - any access to those is simply ignored but still acknowledged;
-  -- read accesses will return zero. Only full-word write accesses are supported (and acknowledged) by this example.
-  -- Sub-word write accesses are ignored.
+  -- keccak_sloth registers read data at its clock edge. read_q reproduces
+  -- sloth_top's registered read-data source selection.
+  bus_rsp_o.data <= keccak_rdata when keccak_read_q = '1' else (others => '0');
 
   bus_access: process(rstn_i, clk_i)
   begin
     if (rstn_i = '0') then
-      cfs_reg_wr(0) <= (others => '0');
-      cfs_reg_wr(1) <= (others => '0');
-      cfs_reg_wr(2) <= (others => '0');
-      cfs_reg_wr(3) <= (others => '0');
-      bus_rsp_o     <= rsp_terminate_c;
-    elsif rising_edge(clk_i) then -- synchronous interface for read and write accesses
-      -- transfer/access acknowledge --
-      bus_rsp_o.ack <= bus_req_i.stb; -- send ACK right after the access request
-      bus_rsp_o.err <= '0'; -- set high together with bus_rsp_o.ack if there is an access error
-
-      -- bus access --
-      bus_rsp_o.data <= (others => '0'); -- the output HAS TO BE ZERO if there is no actual (read) access
-      if (bus_req_i.stb = '1') then -- valid access cycle, STB is high for exactly one cycle
-
-        -- write access (word-wise) --
-        if (bus_req_i.rw = '1') then
-          if (bus_req_i.addr(15 downto 2) = "00000000000000") then -- 16-bit byte address = 14-bit word address
-            cfs_reg_wr(0) <= bus_req_i.data;
-          end if;
-          if (bus_req_i.addr(15 downto 2) = "00000000000001") then
-            cfs_reg_wr(1) <= bus_req_i.data;
-          end if;
-          if (bus_req_i.addr(15 downto 2) = "00000000000010") then
-            cfs_reg_wr(2) <= bus_req_i.data;
-          end if;
-          if (bus_req_i.addr(15 downto 2) = "00000000000011") then
-            cfs_reg_wr(3) <= bus_req_i.data;
-          end if;
-
-        -- read access (word-wise) --
-        else
-          case bus_req_i.addr(15 downto 2) is -- 16-bit byte address = 14-bit word address
-            when "00000000000000" => bus_rsp_o.data <= cfs_reg_rd(0);
-            when "00000000000001" => bus_rsp_o.data <= cfs_reg_rd(1);
-            when "00000000000010" => bus_rsp_o.data <= cfs_reg_rd(2);
-            when "00000000000011" => bus_rsp_o.data <= cfs_reg_rd(3);
-            when others           => bus_rsp_o.data <= (others => '0');
-          end case;
-        end if;
-
-      end if;
+      bus_rsp_o.ack  <= '0';
+      bus_rsp_o.err  <= '0';
+      keccak_read_q  <= '0';
+    elsif rising_edge(clk_i) then
+      bus_rsp_o.ack <= bus_req_i.stb; -- standard CFS one-cycle response
+      bus_rsp_o.err <= '0';
+      keccak_read_q <= keccak_sel and (not bus_req_i.rw) and bus_req_i.stb;
     end if;
-  end process bus_access;
-
-
-  -- CFS Function Core ----------------------------------------------------------------------
-  -- -------------------------------------------------------------------------------------------
-  -- This is where the actual functionality can be implemented. The logic below is just a very
-  -- simple example that transforms data from an input register into data in an output register.
-
-  cfs_reg_rd(0) <= x"0000000" & "000" & or_reduce_f(cfs_reg_wr(0)); -- OR all bits
-  cfs_reg_rd(1) <= x"0000000" & "000" & xor_reduce_f(cfs_reg_wr(1)); -- XOR all bits
-  cfs_reg_rd(2) <= bit_rev_f(cfs_reg_wr(2)); -- bit reversal
-  cfs_reg_rd(3) <= (others => '1');
-
+  end process;
 
 end neorv32_cfs_rtl;
