@@ -1,4 +1,5 @@
 //  test_bench.c
+//
 //  Markku-Juhani O. Saarinen <mjos@iki.fi>.  See LICENSE.
 
 //  === Tests for SLotH: KAT, clock cycles, stack use
@@ -7,6 +8,8 @@
 #include <string.h>
 
 #include "kat_drbg.h"
+#include "neorv32_uart.h"
+#include "neorv32.h"
 #include "sio_generic.h"
 #include "slh_dsa.h"
 #include "sloth_hal.h"
@@ -55,7 +58,7 @@ int kat_test(const slh_param_t *iut, int katnum) {
   uint8_t sm[MAX_SIGN + 33 * KATNUM];
 
   rvkat_info(slh_alg_id(iut));
-  sio_puts("# SPHINCS+\n\n");
+  neorv32_uart0_printf("# SPHINCS+\n\n");
 
   //  initialize kat seed drbg
   for (int i = 0; i < 48; i++) {
@@ -122,21 +125,21 @@ size_t test_stack_probe(size_t siz, uint8_t fill);
 
 //  print info
 void clk_label(const char *alg, const char *lab, uint32_t cc, uint32_t stk) {
-  sio_puts("[CLK]\t");
-  sio_puts(alg);
-  sio_putc(' ');
-  sio_put_dec(cc);
-  sio_putc(' ');
-  sio_puts(lab);
-  sio_putc('\n');
+  neorv32_uart0_printf("[CLK]\t");
+  neorv32_uart0_printf(alg);
+  neorv32_uart0_printf(" ");
+  neorv32_uart0_printf("%d",cc);
+  neorv32_uart0_printf(" ");
+  neorv32_uart0_printf(lab);
+  neorv32_uart0_printf("\n");
 
-  sio_puts("[STK]\t");
-  sio_puts(alg);
-  sio_putc(' ');
-  sio_put_dec(stk);
-  sio_putc(' ');
-  sio_puts(lab);
-  sio_putc('\n');
+  neorv32_uart0_printf("[STK]\t");
+  neorv32_uart0_printf(alg);
+  neorv32_uart0_printf(" ");
+  neorv32_uart0_printf("%d",stk);
+  neorv32_uart0_printf(" ");
+  neorv32_uart0_printf(lab);
+  neorv32_uart0_printf("\n");
 }
 
 int chk_test(const slh_param_t *iut, const uint32_t cksum[][2], int katnum) {
@@ -1196,6 +1199,7 @@ int chk_test(const slh_param_t *iut, const uint32_t cksum[][2], int katnum) {
   // aes256ctr_xof_init(&kat_drbg, seed);
 
   // pk_sz = slh_pk_sz(iut);
+  neorv32_uart0_printf("DBG2\n");
   sk_sz = slh_sk_sz(iut);
   sig_sz = slh_sig_sz(iut);
 
@@ -1211,11 +1215,11 @@ int chk_test(const slh_param_t *iut, const uint32_t cksum[][2], int katnum) {
     // aes256ctr_xof_init(&iut_drbg, seed);
 
     //  KeyGen
-    test_stack_fill(STACK_FILL_SIZE, STACK_FILL_BYTE);
-    cc = get_clk_ticks();
+    // test_stack_fill(STACK_FILL_SIZE, STACK_FILL_BYTE);
+    // cc = get_clk_ticks();
     // slh_keygen(pk, sk, &iut_randombytes, iut);
-    cc = get_clk_ticks() - cc;
-    stk = test_stack_probe(STACK_FILL_SIZE, STACK_FILL_BYTE);
+    // cc = get_clk_ticks() - cc;
+    // stk = test_stack_probe(STACK_FILL_SIZE, STACK_FILL_BYTE);
     //  ---
 
     clk_label(slh_alg_id(iut), "slh_keygen()", cc, stk);
@@ -1225,12 +1229,12 @@ int chk_test(const slh_param_t *iut, const uint32_t cksum[][2], int katnum) {
     }
 
     //  Sign
-    test_stack_fill(STACK_FILL_SIZE, STACK_FILL_BYTE);
-    cc = get_clk_ticks();
+    // test_stack_fill(STACK_FILL_SIZE, STACK_FILL_BYTE);
+    // cc = get_clk_ticks();
     // sm_sz = slh_sign(sm, msg, msg_sz, sk, &iut_randombytes, iut);
-    cc = get_clk_ticks() - cc;
+    // cc = get_clk_ticks() - cc;
     sm_sz = 7889 - 33;
-    stk = test_stack_probe(STACK_FILL_SIZE, STACK_FILL_BYTE);
+    // stk = test_stack_probe(STACK_FILL_SIZE, STACK_FILL_BYTE);
     //  ---
 
     clk_label(slh_alg_id(iut), "slh_sign()", cc, stk);
@@ -1240,19 +1244,23 @@ int chk_test(const slh_param_t *iut, const uint32_t cksum[][2], int katnum) {
     if (count < 10) {
       fail += rvkat_chku32("sm", cksum[count][1], rvkat_cksum(sm, sm_sz));
     }
-
+    neorv32_uart0_printf("DBG3\n");
     //  Verify
-    test_stack_fill(STACK_FILL_SIZE, STACK_FILL_BYTE);
-    cc = get_clk_ticks();
+    // test_stack_fill(STACK_FILL_SIZE, STACK_FILL_BYTE);
+    // cc = get_clk_ticks();
+    neorv32_uart0_printf("Counter initial value is %d CC\n",(NEORV32_GPTMR->COUNT)*2);
+    neorv32_gptmr_setup(0, (1<<31));
     ok = slh_verify(sm + sig_sz, msg_sz, sm, pk, iut);
-    cc = get_clk_ticks() - cc;
-    stk = test_stack_probe(STACK_FILL_SIZE, STACK_FILL_BYTE);
+    neorv32_uart0_printf("slh_verify %d CC\n",(NEORV32_GPTMR->COUNT)*2);
+    neorv32_gptmr_disable();
+    // cc = get_clk_ticks() - cc;
+    // stk = test_stack_probe(STACK_FILL_SIZE, STACK_FILL_BYTE);
     //  ---
 
     clk_label(slh_alg_id(iut), "slh_verify()", cc, stk);
-    sio_puts("The ok variable is:");
-    sio_put_dec(ok);
-    sio_putc('\n');
+    neorv32_uart0_printf("The ok variable is:");
+    neorv32_uart0_printf("%d",ok);
+    neorv32_uart0_printf("\n");
 
     if (!ok) {
       fail++;

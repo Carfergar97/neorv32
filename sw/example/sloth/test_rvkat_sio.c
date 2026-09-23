@@ -4,6 +4,7 @@
 //  === functions to facilitate simple startup tests
 
 #include "test_rvkat.h"
+#include "neorv32.h"
 
 #ifndef RVK_ALGTEST_QUIET
 
@@ -14,9 +15,9 @@
 static void rvkat_failpass(int fail)
 {
     if (fail) {
-        sio_puts("[FAIL]\t");
+        neorv32_uart0_printf("[FAIL]\t");
     } else {
-        sio_puts("[PASS]\t");
+        neorv32_uart0_printf("[PASS]\t");
     }
 }
 
@@ -26,9 +27,9 @@ static inline void rvkat_out_hexdigit(unsigned x)
 {
     x &= 0xF;
     if (x < 10) {
-        sio_putc('0' + x);
+        neorv32_uart0_putc('0' + x);
     } else {
-        sio_putc('A' - 10 + x);
+        neorv32_uart0_putc('A' - 10 + x);
     }
 }
 //  print a space ' ' and hexademical unsigned long without a label
@@ -37,7 +38,7 @@ void rvkat_hexu32(uint32_t x)
 {
     int i;
 
-    sio_putc(' ');
+    neorv32_uart0_putc(' ');
     for (i = 28; i >= 0; i -= 4) {
         rvkat_out_hexdigit((unsigned) (x >> i));
     }
@@ -47,7 +48,7 @@ void rvkat_hexu64(uint64_t x)
 {
     int i;
 
-    sio_putc(' ');
+    neorv32_uart0_putc(' ');
     for (i = 60; i >= 0; i -= 4) {
         rvkat_out_hexdigit((unsigned) (x >> i));
     }
@@ -75,14 +76,14 @@ int rvkat_chkret(const char *lab, int want, int have)
     int fail = (want == have) ? 0 : 1;
 
     rvkat_failpass(fail);
-    sio_puts(lab);
-    sio_puts(" ( chk=");
-    sio_put_dec(have);
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_printf(" ( chk=");
+    neorv32_uart0_printf("%d",have);
     if (fail) {
-        sio_puts(" WANT=");
-        sio_put_dec(want);
+        neorv32_uart0_printf(" WANT=");
+        neorv32_uart0_printf("%d",want);
     }
-    sio_puts(" )\n");
+    neorv32_uart0_printf(" )\n");
     return fail;
 }
 
@@ -93,14 +94,14 @@ int rvkat_chku32(const char *lab, uint32_t want, uint32_t have)
     int fail = (want == have) ? 0 : 1;
 
     rvkat_failpass(fail);
-    sio_puts(lab);
-    sio_puts(" ( chk=");
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_printf(" ( chk=");
     rvkat_hexu32(have);
     if (fail) {
-        sio_puts(" WANT=");
+        neorv32_uart0_printf(" WANT=");
         rvkat_hexu32(want);
     }
-    sio_puts(" )\n");
+    neorv32_uart0_printf(" )\n");
 
     return fail;
 }
@@ -110,14 +111,14 @@ int rvkat_chku64(const char *lab, uint64_t want, uint64_t have)
     int fail = (want == have) ? 0 : 1;
 
     rvkat_failpass(fail);
-    sio_puts(lab);
-    sio_puts(" ( chk=");
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_printf(" ( chk=");
     rvkat_hexu64(have);
     if (fail) {
-        sio_puts(" WANT=");
+        neorv32_uart0_printf(" WANT=");
         rvkat_hexu64(want);
     }
-    sio_puts(" )\n");
+    neorv32_uart0_printf(" )\n");
 
     return fail;
 }
@@ -126,20 +127,20 @@ int rvkat_chku64(const char *lab, uint64_t want, uint64_t have)
 
 void rvkat_hex(const char *lab, const void *data, size_t len)
 {
-    sio_puts(lab);
-    sio_puts(" = ");
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_printf(" = ");
     rvkat_hexdata(data, len);
-    sio_putc('\n');
+    neorv32_uart0_putc('\n');
 }
 
 //
 
 void rvkat_dec(const char *lab, uint32_t x)
 {
-    sio_puts(lab);
-    sio_puts(" = ");
-    sio_put_dec(x);
-    sio_putc('\n');
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_printf(" = ");
+    neorv32_uart0_printf("%d",x);
+    neorv32_uart0_putc('\n');
 }
 
 
@@ -147,9 +148,9 @@ void rvkat_dec(const char *lab, uint32_t x)
 
 void rvkat_info(const char *info)
 {
-    sio_puts("[INFO]\t");
-    sio_puts(info);
-    sio_putc('\n');
+    neorv32_uart0_printf("[INFO]\t");
+    neorv32_uart0_printf(info);
+    neorv32_uart0_putc('\n');
 }
 
 #else  //   RVK_ALGTEST_VERBOSE_SIO
@@ -264,17 +265,17 @@ int rvkat_chkhex(const char *lab, const void *data, size_t len,
 
 #ifndef RVK_ALGTEST_QUIET
     rvkat_failpass(fail);
-    sio_puts(lab);
-    sio_putc(' ');
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_putc(' ');
     rvkat_hexdata(data, len);
-    sio_putc('\n');
+    neorv32_uart0_putc('\n');
 
     if (fail) {
-        sio_puts("[WANT]\t");
-        sio_puts(lab);
-        sio_putc(' ');
-        sio_puts(ref);
-        sio_putc('\n');
+        neorv32_uart0_printf("[WANT]\t");
+        neorv32_uart0_printf(lab);
+        neorv32_uart0_putc(' ');
+        neorv32_uart0_printf(ref);
+        neorv32_uart0_putc('\n');
     }
 #endif
 
@@ -316,15 +317,15 @@ uint32_t rvkat_chk( const char *lab, const char *id, uint32_t num,
 {
     uint32_t x;
 
-    sio_puts("[CHK]\t");
-    sio_puts(lab);
-    sio_putc(' ');
-    sio_puts(id);
-    sio_putc('[');
-    sio_put_dec(num);
-    sio_putc(']');
+    neorv32_uart0_printf("[CHK]\t");
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_putc(' ');
+    neorv32_uart0_printf(id);
+    neorv32_uart0_putc('[');
+    neorv32_uart0_printf("%d",num);
+    neorv32_uart0_putc(']');
     x = rvkat_cksum(data, data_sz);
     rvkat_hexu32(x);
-    sio_putc('\n');
+    neorv32_uart0_putc('\n');
     return x;
 }

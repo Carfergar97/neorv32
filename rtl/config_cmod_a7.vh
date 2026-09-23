@@ -11,7 +11,7 @@
 `default_nettype none
 
 `define     SLOTH                           //  standalone configuration
-`define     SLOTH_CLK   12000000           //  input clock frequency
+`define     SLOTH_CLK   100000000           //  input clock frequency
 `define     RAM_XADR    17                  //  RAM (1 << RAM_XADR) bytes
 
 //  === cpu core options
@@ -27,14 +27,6 @@
 
 //  === top options
 `define     SLOTH_KECCAK                    //  FIPS 202 / SHA3 & SHAKE
-//`define     SLOTH_SHA256                    //  FIPS 180 / SHA2-224 & 256
-//`define     SLOTH_SHA512                    //  FIPS 180 / SHA2-384 & 512
-//`define       SLOTH_KECTI3                    //  Masked Keccak (SHA3 & SHAKE)
 
-//  === communication pins
-`define     CONF_GPIO                       //  General purpose IO
-`define     CONF_UART_TX                    //  Serial transmit
-`define     CONF_UART_RX                    //  Serial receive
-`define     UART_BITCLKS (`SLOTH_CLK/115200) // clocks per bit
 
 `endif

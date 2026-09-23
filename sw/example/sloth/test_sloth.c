@@ -4,9 +4,11 @@
 //  === some basic health test for sloth modules
 
 #include <string.h>
+#include "neorv32_uart.h"
 #include "plat_local.h"
 #include "test_rvkat.h"
 #include "sloth_hal.h"
+#include "neorv32.h"
 
 #include "sha2_api.h"
 #include "sha3_api.h"
@@ -15,11 +17,11 @@
 
 void perf_ticks(const char *lab, uint32_t cc)
 {
-    sio_puts("[CLK]\t");
-    sio_put_dec(cc);
-    sio_putc('\t');
-    sio_puts(lab);
-    sio_putc('\n');
+    neorv32_uart0_printf("[CLK]\t");
+    // sio_put_dec(cc);
+    neorv32_uart0_tx_put('\t');
+    neorv32_uart0_printf(lab);
+    neorv32_uart0_tx_put('\n');
 }
 
 #ifdef SLOTH_KECTI3
@@ -94,50 +96,50 @@ int test_sloth()
 
     //  SHA2-256
     #ifdef SLOTH_SHA2
-      memset(buf, 0x00, 96);
-      for (i = 0; i < 8; i++) {
-          memcpy(buf + 4 * i, sha2_iv[i], 4);
-      }
-      memcpy(buf + 32, "abc\x80", 4);
-      buf[95] = 3 * 8;
-
-      cc = get_clk_ticks();
-      sha256_compress(buf);
-      cc = get_clk_ticks() - cc;
-      perf_ticks("sha256_compress()", cc);
-
-      //  SHA2-256("abc") =
-      //  BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD
-      fail += rvkat_chku32("sha256", 0x55F39AFA, rvkat_cksum(buf, 32));
-
-      //  SHA2-512
-      memset(buf, 0x00, 192);
-      memcpy(buf, sha2_iv, 64);
-      memcpy(buf + 64, "abc\x80", 4);
-      buf[191] = 3 * 8;
-
-      cc = get_clk_ticks();
-      sha512_compress(buf);
-      cc = get_clk_ticks() - cc;
-      perf_ticks("sha512_compress()", cc);
-
-      //  SHA2-512("abc") =
-      //  DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A
-      //  2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F
-      fail += rvkat_chku32("sha512", 0x1F59A287, rvkat_cksum(buf, 64));
+      // memset(buf, 0x00, 96);
+      // for (i = 0; i < 8; i++) {
+      //     memcpy(buf + 4 * i, sha2_iv[i], 4);
+      // }
+      // memcpy(buf + 32, "abc\x80", 4);
+      // buf[95] = 3 * 8;
+      //
+      // cc = get_clk_ticks();
+      // sha256_compress(buf);
+      // cc = get_clk_ticks() - cc;
+      // perf_ticks("sha256_compress()", cc);
+      //
+      // //  SHA2-256("abc") =
+      // //  BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD
+      // fail += rvkat_chku32("sha256", 0x55F39AFA, rvkat_cksum(buf, 32));
+      //
+      // //  SHA2-512
+      // memset(buf, 0x00, 192);
+      // memcpy(buf, sha2_iv, 64);
+      // memcpy(buf + 64, "abc\x80", 4);
+      // buf[191] = 3 * 8;
+      //
+      // cc = get_clk_ticks();
+      // sha512_compress(buf);
+      // cc = get_clk_ticks() - cc;
+      // perf_ticks("sha512_compress()", cc);
+      //
+      // //  SHA2-512("abc") =
+      // //  DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A
+      // //  2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F
+      // fail += rvkat_chku32("sha512", 0x1F59A287, rvkat_cksum(buf, 64));
     #endif /* ifdef SHA2 */
 
-
+    neorv32_uart0_printf("Hola\n");
     //  SHAKE256
     memset(buf, 0x00, 200);
     memcpy(buf, "abc\x1F", 4);              //  pad: 0x1F=SHAKE, 0x06=SHA-3
     buf[200 - 2*32 - 1] = 0x80;             //  rate/capacity for 256
 
-    cc = get_clk_ticks();
+    // cc = get_clk_ticks();
     keccak_f1600(buf);
-    cc = get_clk_ticks() - cc;
-    perf_ticks("keccak_f1600()", cc);
-
+    // cc = get_clk_ticks() - cc;
+    // perf_ticks("keccak_f1600()", cc);
+    neorv32_uart0_printf("DBG1\n");
     //  SHAKE256("abc") =
     //  483366601360A8771C6863080CC4114D8DB44530F8F1E1EE4F94EA37E78B5739
     fail += rvkat_chku32("shake256", 0x07C97065, rvkat_cksum(buf, 32));

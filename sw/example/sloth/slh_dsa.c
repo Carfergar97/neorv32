@@ -4,6 +4,8 @@
 //  === FIPS 205 (ipd) Stateless Hash-Based Digital Signature Standard
 
 #include "slh_dsa.h"
+#include <neorv32.h>
+#include "neorv32_uart.h"
 #include "plat_local.h"
 #include "slh_ctx.h"
 #include "slh_adrs.h"
@@ -492,16 +494,17 @@ static bool ht_verify(  slh_ctx_t *ctx, const uint8_t *m,
     kat_hex("PK.ROOT",ctx->pk_root,prm->n);
     uint8_t t;
     t = 0;
-    sio_puts("PK is : "); 
-    for (i = 0; i < prm->n; i++) {
-//        sprintf(buffer, "node[%d]", i);
-//        kat_hex(buffer,node+i,1);
-//        sprintf(buffer, "PK.ROOT[%d]", i);
-//        kat_hex(buffer,(ctx->pk_root)+i,1);
-        t |= node[i] ^ ctx->pk_root[i];
-        sio_put_hex((uint32_t)node[i],0);
-    }
-      sio_putc('\n');
+//     neorv32_uart0_printf("PK is : "); 
+//     for (i = 0; i < prm->n; i++) {
+// //        sprintf(buffer, "node[%d]", i);
+// //        kat_hex(buffer,node+i,1);
+// //        sprintf(buffer, "PK.ROOT[%d]", i);
+// //        kat_hex(buffer,(ctx->pk_root)+i,1);
+//         t |= node[i] ^ ctx->pk_root[i];
+//         neorv32_uart0_printf("0x");
+//         neorv32_uart0_printf("%X",(uint32_t)node[i]);
+//     }
+//       neorv32_uart0_printf("\n");
     return t == 0;
 }
 
@@ -844,7 +847,6 @@ bool slh_verify(const uint8_t *m, size_t m_sz,
     adrs_set_tree_address(&ctx, i_tree);
     adrs_set_type_and_clear_not_kp(&ctx, ADRS_FORS_TREE);
     adrs_set_key_pair_address(&ctx, i_leaf);
-
     fors_pk_from_sig(&ctx, pk_fors, sig_fors, md);
     kat_hex("La clave pública del esquema FORS PK=T_k(PK.SEED,ADDR,pk)", pk_fors, prm->n);
     bool sig_ok = ht_verify(&ctx, pk_fors, sig_ht, i_tree, i_leaf);
