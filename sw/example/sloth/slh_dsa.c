@@ -494,17 +494,17 @@ static bool ht_verify(  slh_ctx_t *ctx, const uint8_t *m,
     kat_hex("PK.ROOT",ctx->pk_root,prm->n);
     uint8_t t;
     t = 0;
-//     neorv32_uart0_printf("PK is : "); 
-//     for (i = 0; i < prm->n; i++) {
+    // neorv32_uart0_printf("PK is : "); 
+    // neorv32_uart0_printf("0x");
+    for (i = 0; i < prm->n; i++) {
 // //        sprintf(buffer, "node[%d]", i);
 // //        kat_hex(buffer,node+i,1);
 // //        sprintf(buffer, "PK.ROOT[%d]", i);
 // //        kat_hex(buffer,(ctx->pk_root)+i,1);
-//         t |= node[i] ^ ctx->pk_root[i];
-//         neorv32_uart0_printf("0x");
-//         neorv32_uart0_printf("%X",(uint32_t)node[i]);
-//     }
-//       neorv32_uart0_printf("\n");
+        t |= node[i] ^ ctx->pk_root[i];
+        // neorv32_uart0_printf("%X",(uint32_t)node[i]);
+    }
+      // neorv32_uart0_printf("\n");
     return t == 0;
 }
 
