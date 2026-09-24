@@ -60,7 +60,9 @@ begin
   irq_o     <= keccak_irq;      -- optional; polling also works
 
   -- Do not alias CFS offsets >= 512 bytes onto Keccak registers.
-  keccak_sel <= '1' when (bus_req_i.stb='1' and bus_req_i.addr(23 downto 16)=X"EB") else '0';
+  -- keccak_sel <= '1' when (bus_req_i.stb='1' and bus_req_i.addr(23 downto 16)=X"EB") else '0';
+  -- keccak_sel <= '1' when (bus_req_i.stb='1') else '0';
+  keccak_sel <= bus_req_i.stb;
   keccak_addr  <= bus_req_i.addr(8 downto 2); -- word offset, 0 ... 127
   keccak_wdata <= bus_req_i.data;
   keccak_wen   <= bus_req_i.ben when bus_req_i.rw = '1' else (others => '0');
