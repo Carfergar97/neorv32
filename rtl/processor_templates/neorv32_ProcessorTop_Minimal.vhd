@@ -17,13 +17,13 @@ library neorv32;
 entity neorv32_ProcessorTop_Minimal is
   generic (
     -- Clocking --
-    CLOCK_FREQUENCY : natural := 125000000;       -- clock frequency of clk_i in Hz
+    CLOCK_FREQUENCY : natural := 100000000;       -- clock frequency of clk_i in Hz
     -- Internal Instruction memory --
     IMEM_EN         : boolean := true;    -- implement processor-internal instruction memory
     IMEM_SIZE       : natural := 64*1024;  -- size of processor-internal instruction memory in bytes
     -- Internal Data memory --
     DMEM_EN         : boolean := true;    -- implement processor-internal data memory
-    DMEM_SIZE       : natural := 16*1024; -- size of processor-internal data memory in bytes
+    DMEM_SIZE       : natural := 128*1024; -- size of processor-internal data memory in bytes
     -- Processor peripherals --
     IO_UART0_EN     : boolean := true;
     RISCV_ISA_M     : boolean := false;
@@ -39,6 +39,7 @@ entity neorv32_ProcessorTop_Minimal is
     -- Global control --
     clk_i  : in  std_logic;
     rstn_i : in  std_logic;
+    locked_o: out std_logic;
     -- UART0 --
     uart0_rxd_i : in std_logic;
     uart0_txd_o : out std_logic
@@ -46,10 +47,35 @@ entity neorv32_ProcessorTop_Minimal is
 end entity;
 
 architecture neorv32_ProcessorTop_Minimal_rtl of neorv32_ProcessorTop_Minimal is
+  component clk_wiz_0
+    port
+     (-- Clock in ports
+      -- Clock out ports
+      clk_out1          : out    std_logic;
+      -- Status and control signals
+      resetn             : in     std_logic;
+      locked            : out    std_logic;
+      clk_in1           : in     std_logic
+     );
+  end component;
 
   signal w_rst: std_logic;
-begin
+  signal w_clk_wiz_rst: std_logic;
+  signal w_clk_wiz_out: std_logic;
+  signal w_clk_wiz_locked_out: std_logic;
+  signal w_neorv32_rstn: std_logic;
 
+begin
+clk_wiz_inst : clk_wiz_0
+   port map ( 
+  -- Clock out ports  
+   clk_out1 => w_clk_wiz_out,
+  -- Status and control signals                
+   resetn => w_clk_wiz_rst,
+   locked => w_clk_wiz_locked_out,
+   -- Clock in ports
+   clk_in1 => clk_i
+ );
   -- The core of the problem ----------------------------------------------------------------
   -- -------------------------------------------------------------------------------------------
   neorv32_inst: entity neorv32.neorv32_top
@@ -68,6 +94,8 @@ begin
     DMEM_SIZE        => DMEM_SIZE,       -- size of processor-internal data memory in bytes
     -- Processor peripherals --
     IO_CLINT_EN      => true,            -- implement core local interruptor (CLINT)?
+    IO_CFS_EN        => true,
+    IO_GPTMR_EN      => true,
     IO_UART0_EN => IO_UART0_EN,
     RISCV_ISA_M => RISCV_ISA_M,
     RISCV_ISA_C => RISCV_ISA_C,
@@ -81,14 +109,17 @@ begin
   )
   port map(
     -- Global control --
-    clk_i  => clk_i,    -- global clock, rising edge
-    rstn_i => w_rst,   -- global reset, low-active, async
+    clk_i  => w_clk_wiz_out,    -- global clock, rising edge
+    rstn_i => w_neorv32_rstn,   -- global reset, low-active, async
     -- UART0 --
     uart0_rxd_i => uart0_rxd_i,
-    uart0_txd_o => uart0_txd_o 
+    uart0_txd_o => uart0_txd_o
   );
 
   -- Reset Inversion Logic --
+  locked_o <= w_clk_wiz_locked_out;
+  w_clk_wiz_rst <= '1';
   w_rst <= not rstn_i;
+  w_neorv32_rstn <= w_clk_wiz_locked_out and w_rst;
 
 end architecture;
