@@ -1380,7 +1380,7 @@ int clk_test(const slh_param_t *iut, int n) {
     test vectors the message size mlen is 33*i = 33, 66, ..
 */
 
-const uint32_t kat_sksm_cksum[13][10][2] = {
+const uint32_t kat_sksm_cksum[14][10][2] = {
     {//  0:  SLH-DSA-SHAKE-128s
      {0x7139D058, 0xCECD2289},
      {0x04DB860A, 0x2B5D75C3},
@@ -1526,6 +1526,18 @@ const uint32_t kat_sksm_cksum[13][10][2] = {
      {0xD4D29D09, 0xE785DC8F}},
     {//  12: SLH-DSA-SHAKE-128-24s
      {0x968EEF0E, 0xF0146E5C},
+     // We have only calculated the first checksum
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000},
+     {0x00000000, 0x00000000}},
+    {//  134: SLH-DSA-ASCONXOF-128-s
+     {0xB0A8650B, 0x079DC4FD},
      // We have only calculated the first checksum
      {0x00000000, 0x00000000},
      {0x00000000, 0x00000000},
