@@ -7,7 +7,10 @@
 #include "neorv32_gptmr.h"
 #include "neorv32_uart.h"
 #include "test_rvkat.h"
+#include "ascon_api.h"
+#include "sha3_api.h"
 #include <stdint.h>
+#include <stdio.h>
 #ifndef SLOTH
 
 // #include <stdio.h>
@@ -2699,9 +2702,27 @@ int main(void) {
   int fail = 0;
   int iut_n = 6;
 
+  uint8_t buf[200] = {0};
+  uint8_t ascon_msg[3] = {0x00,0x01,0x02};
   // if  (argc == 2 &&
   //     (iut_n = atoi(argv[1])) >= 0 &&
   //     iut_n < 12) {
+  neorv32_uart0_printf("SHAKE and ASCON TEST\n");
+  memset(buf, 0x00, 200);
+  memcpy(buf, "abc\x1F", 4);              //  pad: 0x1F=SHAKE, 0x06=SHA-3
+  buf[200 - 2*32 - 1] = 0x80;             //  rate/capacity for 256
+  keccak_f1600(buf);
+  fail += rvkat_chku32("shake256", 0x07C97065, rvkat_cksum(buf, 32));
+  uint8_t asconBuf[16];
+  memset(asconBuf, 0x00, 16);
+  memcpy(asconBuf,ascon_msg,3); 
+  crypto_hash(asconBuf,asconBuf,3);
+  neorv32_uart0_printf("The ASCONXOF-128 digest is: 0x");
+  for (uint8_t i=0; i<16; i++) {
+    neorv32_uart0_printf("%X",asconBuf[i]); 
+  }
+  neorv32_uart0_printf("\n");
+  fail += rvkat_chku32("asconxof-128", 0x4116e853, rvkat_cksum(asconBuf, 16));
   neorv32_uart0_printf("kat_test entry point\n");
   neorv32_uart0_printf("SLH-DSA algorithm: %s\n", slh_alg_id(test_iut[iut_n]));
   fail += kat_test(test_iut[iut_n], 1, iut_n);
