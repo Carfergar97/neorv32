@@ -129,7 +129,6 @@ int test_sloth()
       // fail += rvkat_chku32("sha512", 0x1F59A287, rvkat_cksum(buf, 64));
     #endif /* ifdef SHA2 */
 
-    neorv32_uart0_printf("Hola\n");
     //  SHAKE256
     memset(buf, 0x00, 200);
     memcpy(buf, "abc\x1F", 4);              //  pad: 0x1F=SHAKE, 0x06=SHA-3
@@ -139,7 +138,6 @@ int test_sloth()
     keccak_f1600(buf);
     // cc = get_clk_ticks() - cc;
     // perf_ticks("keccak_f1600()", cc);
-    neorv32_uart0_printf("DBG1\n");
     //  SHAKE256("abc") =
     //  483366601360A8771C6863080CC4114D8DB44530F8F1E1EE4F94EA37E78B5739
     fail += rvkat_chku32("shake256", 0x07C97065, rvkat_cksum(buf, 32));
