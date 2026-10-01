@@ -1026,7 +1026,7 @@ begin
     -- -------------------------------------------------------------------------------------------
     neorv32_cfs_enabled:
     if IO_CFS_EN generate
-      neorv32_cfs_inst: entity neorv32.neorv32_cfs
+      neorv32_cfs_inst: entity neorv32.neorv32_cfs(neorv32_cfs_ascon_rtl)
       port map (
         clk_i       => clk_i,
         rstn_i      => rstn_sys,
