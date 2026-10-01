@@ -3,6 +3,7 @@
 
 //  === some basic health test for sloth modules
 
+#include <stdint.h>
 #include <string.h>
 #include "neorv32_uart.h"
 #include "plat_local.h"
@@ -12,6 +13,7 @@
 
 #include "sha2_api.h"
 #include "sha3_api.h"
+#include "ascon_api.h"
 
 //  basic permutation tests
 
@@ -142,5 +144,16 @@ int test_sloth()
     //  483366601360A8771C6863080CC4114D8DB44530F8F1E1EE4F94EA37E78B5739
     fail += rvkat_chku32("shake256", 0x07C97065, rvkat_cksum(buf, 32));
 
+  uint8_t asconBuf[16];
+  uint8_t ascon_msg[3] = {0x00,0x01,0x02};
+  memset(asconBuf, 0x00, 16);
+  memcpy(asconBuf,ascon_msg,3); 
+  crypto_hash(asconBuf,asconBuf,3);
+  neorv32_uart0_printf("The asconxof128 digest is: 0x");
+  for (uint8_t i = 0; i<16; i++) {
+    neorv32_uart0_printf("%X", asconBuf[i]); 
+  }
+  neorv32_uart0_printf("\n");
+  fail += rvkat_chku32("asconxof-128", 0x4116e853, rvkat_cksum(asconBuf, 16));
     return fail;
 }
