@@ -9,18 +9,18 @@ use IEEE.NUMERIC_STD.ALL;
 -- any Xilinx primitives in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
-entity asconPermutation_rc is
+entity ascon_round is
     generic(UROL:integer:=1);
-    Port ( stateIn : in  STD_LOGIC_VECTOR (319 downto 0);
-           rConIn : in  STD_LOGIC_VECTOR (7 DOWNTO 0);
-           rConOut : out  STD_LOGIC_VECTOR (7 DOWNTO 0);
-           stateOut : out  STD_LOGIC_VECTOR (319 downto 0));
-end asconPermutation_rc;
+    Port ( stateIn : in  std_ulogic_vector (319 downto 0);
+           rConIn : in  std_ulogic_vector (7 DOWNTO 0);
+           rConOut : out  std_ulogic_vector (7 DOWNTO 0);
+           stateOut : out  std_ulogic_vector (319 downto 0));
+end ascon_round;
 
-architecture Behavioral of asconPermutation_rc is
+architecture Behavioral of ascon_round is
 
     -- Returns the round constant of the round following rc.
-    function next_rc( rc : std_logic_vector(7 DOWNTO 0) ) return std_logic_vector is
+    function next_rc( rc : std_ulogic_vector(7 DOWNTO 0) ) return std_ulogic_vector is
     begin
         case rc is
             when X"5a" => return X"4b";
@@ -44,9 +44,9 @@ architecture Behavioral of asconPermutation_rc is
 
 begin
  PROCESS (stateIn, rConIn)
-        VARIABLE x0, x1, x2, x3, x4 : STD_LOGIC_VECTOR(63 DOWNTO 0);
-        VARIABLE t0, t1 : STD_LOGIC_VECTOR(63 DOWNTO 0);
-        VARIABLE rc : STD_LOGIC_VECTOR(7 DOWNTO 0);
+        VARIABLE x0, x1, x2, x3, x4 : std_ulogic_vector(63 DOWNTO 0);
+        VARIABLE t0, t1 : std_ulogic_vector(63 DOWNTO 0);
+        VARIABLE rc : std_ulogic_vector(7 DOWNTO 0);
     BEGIN
         ---------------------------------------------------------------------------
         --! Map bit vector to ascon state
