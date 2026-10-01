@@ -31,7 +31,7 @@ entity neorv32_cfs is
   );
 end neorv32_cfs;
 
-architecture neorv32_cfs_rtl of neorv32_cfs is
+architecture neorv32_cfs_keccak_rtl of neorv32_cfs is
 
   component keccak_sloth is
     port (
@@ -96,4 +96,69 @@ begin
     end if;
   end process;
 
-end neorv32_cfs_rtl;
+end neorv32_cfs_keccak_rtl;
+
+architecture neorv32_cfs_ascon_rtl of neorv32_cfs is
+
+  component ascon_sloth is
+    port (
+      clk   : in  std_ulogic;
+      rst   : in  std_ulogic;
+      sel   : in  std_ulogic;
+      irq   : out std_ulogic;
+      wen   : in  std_ulogic_vector(3 downto 0);
+      addr  : in  std_ulogic_vector(6 downto 0);
+      wdata : in  std_ulogic_vector(31 downto 0);
+      rdata : out std_ulogic_vector(31 downto 0)
+    );
+  end component;
+
+  signal ascon_sel    : std_ulogic;
+  signal ascon_irq    : std_ulogic;
+  signal ascon_wen    : std_ulogic_vector(3 downto 0);
+  signal ascon_addr   : std_ulogic_vector(6 downto 0);
+  signal ascon_wdata  : std_ulogic_vector(31 downto 0);
+  signal ascon_rdata  : std_ulogic_vector(31 downto 0);
+  signal ascon_read_q : std_ulogic;
+
+begin
+
+  cfs_out_o <= (others => '0'); -- unused
+  irq_o     <= ascon_irq;       -- optional; polling also works
+
+  -- Do not alias CFS offsets >= 512 bytes onto Ascon registers.
+  ascon_sel   <= bus_req_i.stb;
+  ascon_addr  <= bus_req_i.addr(8 downto 2); -- word offset, 0 ... 127
+  ascon_wdata <= bus_req_i.data;
+  ascon_wen   <= bus_req_i.ben when bus_req_i.rw = '1' else (others => '0');
+
+  ascon_sloth_inst: ascon_sloth
+  port map (
+    clk   => clk_i,
+    rst   => not rstn_i, -- accelerator reset is active-high
+    sel   => ascon_sel,
+    irq   => ascon_irq,
+    wen   => ascon_wen,
+    addr  => ascon_addr,
+    wdata => ascon_wdata,
+    rdata => ascon_rdata
+  );
+
+  -- ascon_sloth registers read data at its clock edge. read_q reproduces
+  -- sloth_top's registered read-data source selection.
+  bus_rsp_o.data <= ascon_rdata when ascon_read_q = '1' else (others => '0');
+
+  bus_access: process(rstn_i, clk_i)
+  begin
+    if (rstn_i = '0') then
+      bus_rsp_o.ack <= '0';
+      bus_rsp_o.err <= '0';
+      ascon_read_q  <= '0';
+    elsif rising_edge(clk_i) then
+      bus_rsp_o.ack <= bus_req_i.stb; -- standard CFS one-cycle response
+      bus_rsp_o.err <= '0';
+      ascon_read_q  <= ascon_sel and (not bus_req_i.rw) and bus_req_i.stb;
+    end if;
+  end process;
+
+end neorv32_cfs_ascon_rtl;
