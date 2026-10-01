@@ -19,6 +19,7 @@
 
 #define KTI3_WAIT { while (r32[KTI3_STAT] != 0) ; }
 #define KECC_WAIT { while (r32[KECC_STAT] != 0) ; }
+#define ASCON_WAIT { while (r32[ASCON_STAT] != 0) ; }
 #define S256_WAIT { while (r32[S256_STAT] != 0) ; }
 #define S512_WAIT { while (r32[S512_STAT] != 0) ; }
 
