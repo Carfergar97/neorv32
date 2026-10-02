@@ -14,7 +14,7 @@ EFFORT = -Os
 USER_FLAGS += -ggdb -gdwarf-3 -Wstack-usage=8192 
 
 # Adjust processor IMEM size
-USER_FLAGS += -Wl,--defsym,__neorv32_rom_size=128k -DSLOTH -DSLOTH_KECCAK -DSLOTH_SHA256
+USER_FLAGS += -Wl,--defsym,__neorv32_rom_size=128k -DSLOTH -DSLOTH_KECCAK -DSLOTH_SHA256 -DSLOTH_ASCON
 
 # Adjust processor DMEM size
 USER_FLAGS += -Wl,--defsym,__neorv32_ram_size=64k

@@ -8,7 +8,6 @@
 #include "slh_ctx.h"
 #include "slh_adrs.h"
 #include "sha3_api.h"
-#include "ascon_api.h"
 #include "sloth_hal.h"
 #include <string.h>
 
@@ -32,23 +31,6 @@ void keccak_f1600(void *v)
     }
 }
 
-void ascon_p12(void *v)
-{
-    uint32_t *v32 = (uint32_t *) v;
-    volatile uint32_t   *r32 = (volatile uint32_t *) ASCON_BASE_ADDR;
-    int i;
-
-    for (i = 0; i < 10; i++) {              //  actually slow part 1
-        r32[i] = v32[i];
-    }
-    r32[ASCON_STOP] = 0x4b;                  //  stop position
-    r32[ASCON_TRIG] = 0xf0;                  //  start it
-    ASCON_WAIT
-
-    for (i = 0; i < 10; i++) {              //  actually slow part 2
-        v32[i] = r32[i];
-    }
-}
 //  === 10.1.   SLH-DSA Using SHAKE
 
 //  Hmsg(R, PK.seed, PK.root, M) = SHAKE256(R || PK.seed || PK.root || M, 8m)
