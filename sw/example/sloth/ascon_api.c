@@ -1,17 +1,25 @@
 #include <ascon_api.h>
 
 void ascon_init(ascon_ctx_t *c) {
-  c->x[0] = ASCON_XOF_IV;
-  c->x[1] = 0;
-  c->x[2] = 0;
-  c->x[3] = 0;
-  c->x[4] = 0;
+  // ASCONxof128 initial value
+  // c->x[0] = ASCON_XOF_IV;
+  // c->x[1] = 0;
+  // c->x[2] = 0;
+  // c->x[3] = 0;
+  // c->x[4] = 0;
+  //
 
 #ifdef SLOTH
-  ascon_p12(c);
+  // ascon_p12(c);
 #else
   P12(c);
 #endif
+  // Precomputed ASCONxof128 initial value
+  c->x[0] = 0xda82ce768d9447eb;
+  c->x[1] = 0xcc7ce6c75f1ef969;
+  c->x[2] = 0xe7508fd780085631;
+  c->x[3] = 0x0ee0ea53416b58cc;
+  c->x[4] = 0xe0547524db6f0bde;
 }
 
 void ascon_absorb(ascon_ctx_t *c, const uint8_t *in, uint64_t inlen) {
