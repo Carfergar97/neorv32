@@ -23,7 +23,7 @@ void ascon_p12(void *v)
         r32[i] = v32[i];
     }
     r32[ASCON_STOP] = 0x4b;                  //  stop position
-    r32[ASCON_TRIG] = 0xf0;                  //  start it 0xf0 --> 12 rounds
+    r32[ASCON_TRIG] = 0xF0;                  //  start it 0xf0 --> 12 rounds
     ASCON_WAIT
 
     for (i = 0; i < 10; i++) {              //  actually slow part 2
@@ -125,7 +125,7 @@ static void ascon_t( slh_ctx_t *ctx, uint8_t *h,
         m_sz--;
     }
     if (i >= rblk) {
-        r32[ASCON_TRIG] = 0x01;              //  absorb
+        r32[ASCON_TRIG] = 0xF0;              //  absorb
         ASCON_WAIT
         i = 0;
     }
@@ -135,7 +135,7 @@ static void ascon_t( slh_ctx_t *ctx, uint8_t *h,
         for (j = 0; j < rblk; j++) {
             r32[j] ^= m32[j];
         }
-        r32[ASCON_TRIG] = 0x01;              //  absorb
+        r32[ASCON_TRIG] = 0xF0;              //  absorb
         ASCON_WAIT
         m32 += rblk;
         m_sz -= rblk;
@@ -145,7 +145,7 @@ static void ascon_t( slh_ctx_t *ctx, uint8_t *h,
     while (m_sz > 0) {
         r32[i++] ^= *m32++;
         if (i >= rblk) {
-            r32[ASCON_TRIG] = 0x01;          //  absorb
+            r32[ASCON_TRIG] = 0xF0;          //  absorb
             ASCON_WAIT
             i = 0;
         }
@@ -153,7 +153,7 @@ static void ascon_t( slh_ctx_t *ctx, uint8_t *h,
     }
     r32[i] ^= 0x01;                         //  ascon256 padding
     r32[rblk - 1] ^= 1 << 31;
-    r32[ASCON_TRIG] = 0x01;                  //  squeeze
+    r32[ASCON_TRIG] = 0xF0;                  //  squeeze
     ASCON_WAIT
 
     for (i = 0; i < n / 4; i++) {
@@ -176,7 +176,7 @@ static void ascon_h_16( slh_ctx_t *ctx, uint8_t *h,
     block_copy_16(&r32[16], m2);            //  after PK_seed, ADRS, and m1
     r32[20]         =   0x01;               //  ascon padding
 
-    r32[ASCON_TRIG]  =   0x01;               //  start it
+    r32[ASCON_TRIG]  =   0xFO;               //  start it
     ASCON_WAIT
 
     block_copy_16(h, r32);
