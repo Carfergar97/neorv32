@@ -228,7 +228,7 @@ begin
       -- retain their values, as they do in the original Verilog implementation.
       if rst = '1' then
         rndc_r <= x"00";
-        stop_r <= x"74";
+        stop_r <= x"4B";
         chns_r <= x"00";
         chni_r <= x"00";
         secn_r <= x"10";
