@@ -151,7 +151,7 @@ static void ascon_t( slh_ctx_t *ctx, uint8_t *h,
         }
         m_sz--;
     }
-    r32[i] ^= 0x1F;                         //  ascon256 padding
+    r32[i] ^= 0x01;                         //  ascon256 padding
     r32[rblk - 1] ^= 1 << 31;
     r32[ASCON_TRIG] = 0x01;                  //  squeeze
     ASCON_WAIT
@@ -174,7 +174,7 @@ static void ascon_h_16( slh_ctx_t *ctx, uint8_t *h,
     ASCON_WAIT
 
     block_copy_16(&r32[16], m2);            //  after PK_seed, ADRS, and m1
-    r32[20]         =   0x1F;               //  ascon padding
+    r32[20]         =   0x01;               //  ascon padding
 
     r32[ASCON_TRIG]  =   0x01;               //  start it
     ASCON_WAIT
