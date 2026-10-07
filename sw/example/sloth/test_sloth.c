@@ -14,6 +14,8 @@
 #include "sha2_api.h"
 #include "sha3_api.h"
 #include "ascon_api.h"
+#include "slh_dsa.h"
+#include "slh_ctx.h"
 
 //  basic permutation tests
 
@@ -155,5 +157,23 @@ int test_sloth()
   }
   neorv32_uart0_printf("\n");
   fail += rvkat_chku32("asconxof-128", 0x4116e853, rvkat_cksum(asconBuf, 16));
-    return fail;
+
+  neorv32_uart0_printf("TEST de las funciones de ASCON para comprobar que la implementación sea correcta en el NEORV32\n");
+
+  slh_ctx_t ctx;
+  ctx.prm = &slh_dsa_ascon_128s;
+  uint8_t pk_test[2*32] = {0};
+  uint8_t sk_test[4*32] = {0};
+  ctx.prm->mk_ctx(&ctx, pk_test, sk_test, ctx.prm);
+  uint8_t m1[16]={0};
+  uint8_t h[16]={0};
+
+  slh_dsa_ascon_128s.h_f(&ctx, h, m1);
+
+  neorv32_uart0_printf("ascon_f output is 0x");
+  for (size_t i=0; i<16; i++) {
+    neorv32_uart0_printf("%X",h[i]);
+  }
+  neorv32_uart0_printf("\n");
+return fail;
 }
