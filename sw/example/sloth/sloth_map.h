@@ -68,10 +68,12 @@
 // see ascon_sloth.vhd
 #define ASCON_BASE_ADDR NEORV32_CFS_BASE
 #define ASCON_MEMA   0
-#define ASCON_ADRS   50
-#define ASCON_SEED   58
-#define ASCON_SKSD   66
-#define ASCON_MTOP   74
+#define ASCON_ADRS   10
+#define ASCON_SEED   18
+#define ASCON_SKSD   22
+#define ASCON_M1     26
+#define ASCON_M2     32
+#define ASCON_MTOP   36
 #define ASCON_CTRL   120
 #define ASCON_STAT   120
 #define ASCON_TRIG   120
