@@ -60,12 +60,23 @@ static void ascon_f_16( slh_ctx_t *ctx,
 {
     volatile uint32_t   *r32 = (volatile uint32_t *) ASCON_BASE_ADDR;
 
-    block_copy_16(r32, m1);
-
-    r32[ASCON_CHNS]  =   1;                  //  one iteration
+    block_copy_16(&r32[ASCON_M1], m1);
+    r32[ASCON_STOP] = 0x4b;                  //  stop position
+    r32[ASCON_TRIG] = 0xf0; 
     ASCON_WAIT
-
-    block_copy_16(h, (const void *) r32);
+    //Squeeze
+    ((uint32_t*)h)[0]=r32[0]; 
+    ((uint32_t*)h)[1]=r32[1]; 
+    r32[ASCON_STOP] = 0x4b;                  //  stop position
+    r32[ASCON_TRIG] = 0xf0; 
+    ASCON_WAIT
+    ((uint32_t*)h)[2]=r32[0]; 
+    ((uint32_t*)h)[3]=r32[1]; 
+    // SHAKE Implementation
+    // r32[ASCON_CHNS]  =   1;                  //  one iteration
+    // ASCON_WAIT
+    //
+    // block_copy_16(h, (const void *) r32);
 }
 
 //  PRF(PK.seed, SK.seed, ADRS) = ASCON-XOF128(PK.seed || ADRS || SK.seed, 8n)
@@ -176,7 +187,7 @@ static void ascon_h_16( slh_ctx_t *ctx, uint8_t *h,
     block_copy_16(&r32[16], m2);            //  after PK_seed, ADRS, and m1
     r32[20]         =   0x01;               //  ascon padding
 
-    r32[ASCON_TRIG]  =   0xFO;               //  start it
+    r32[ASCON_TRIG]  =   0xF0;               //  start it
     ASCON_WAIT
 
     block_copy_16(h, r32);
@@ -202,7 +213,16 @@ static void ascon_mk_ctx(slh_ctx_t *ctx,
     }
 
     volatile uint32_t   *r32 = (volatile uint32_t *) ASCON_BASE_ADDR;
-
+    r32[0] = 0x8d9447eb;
+    r32[1] = 0xda82ce76;
+    r32[2] = 0x5f1ef969;
+    r32[3] = 0xcc7ce6c7;
+    r32[4] = 0x80085631;
+    r32[5] = 0xe7508fd7;
+    r32[6] = 0x416b58cc;
+    r32[7] = 0x0ee0ea53;
+    r32[8] = 0xdb6f0bde;
+    r32[9] = 0xe0547524;
     //  load keys in hardware
     r32[ASCON_SECN]  =   n;
     for (int j = 0; j < n/4; j++) {
