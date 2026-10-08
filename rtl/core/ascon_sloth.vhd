@@ -85,9 +85,9 @@ begin
   msel_w     <= '1' when addr_index < ASCON_CTRL else '0';
   just_pad_w <= chns_r(7);
   wots_prf_w <= chns_r(6);
+  pad_w <= (others => '0');
 
-  -- st_i_w <= mem_block_10(mem, ASCON_MEMA) xor ((255 downto 0=>'0') & ascon_blk_w) when (blkcnt_r=x"00" and rndc_r=x"f0" and blk_r/=x"0") else mem_block_10(mem,ASCON_MEMA);
-  st_i_w <= mem_block_10(mem,ASCON_MEMA);
+  st_i_w <= mem_block_10(mem, ASCON_MEMA) xor ((255 downto 0=>'0') & ascon_blk_w) when (blkcnt_r=x"00" and rndc_r=x"f0" and blk_r/=x"0") else mem_block_10(mem,ASCON_MEMA);
 
   ascon_round_inst: entity work.ascon_round
   port map (
@@ -191,15 +191,15 @@ with blkcnt_r select ascon_blk_w <=
 
           if rndc_r = stop_r then
             rndc_r <= x"00";
-            -- if blk_r /= x"0" then
-            --   rndc_r <= x"f0";
-            --   blkcnt_r <= std_ulogic_vector(unsigned(blkcnt_r) + 1);
-            --   if blkcnt_r = blk_r then
-            --     blkcnt_r <= X"8"; -- We have to apply the PAD.
-            --   elsif blkcnt_r = X"8" then 
-            --     rndc_r <= x"00"; -- We have finished the absorb process..
-            --   end if;
-            -- end if;
+            if blk_r /= x"0" then
+              rndc_r <= x"f0";
+              blkcnt_r <= std_ulogic_vector(unsigned(blkcnt_r) + 1);
+              if blkcnt_r = blk_r then
+                blkcnt_r <= X"8"; -- We have to apply the PAD.
+              elsif blkcnt_r = X"8" then 
+                rndc_r <= x"00"; -- We have finished the absorb process..
+              end if;
+            end if;
             if chns_r = x"00" then
               irq <= '1';
             end if;
