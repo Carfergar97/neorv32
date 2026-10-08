@@ -80,6 +80,7 @@
 #define ASCON_STOP   121
 #define ASCON_SECN   122
 #define ASCON_CHNS   123
+#define ASCON_AUTO   124
 
 //  see sha256_sloth.v
 #define SHA256_BASE_ADDR    0x16000000

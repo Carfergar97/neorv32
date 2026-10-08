@@ -39,6 +39,7 @@ architecture ascon_sloth_rtl of ascon_sloth is
   constant ASCON_STOP : natural := 121;
   constant ASCON_SECN : natural := 122;
   constant ASCON_CHNS : natural := 123;
+  constant ASCON_AUTO : natural := 124;
 
   subtype state_t is std_ulogic_vector(319 downto 0);
   subtype word_t  is std_ulogic_vector(31 downto 0);
@@ -76,7 +77,6 @@ architecture ascon_sloth_rtl of ascon_sloth is
   signal m2_w        : std_ulogic_vector(127 downto 0);
   signal blk_r      :std_ulogic_vector(3 downto 0);
   signal blkcnt_r   : std_ulogic_vector(3 downto 0);
-  signal auto_r     : std_logic;
   signal ascon_blk_w: std_ulogic_vector(63 downto 0);
 
 begin
@@ -147,35 +147,6 @@ with blkcnt_r select ascon_blk_w <=
           if wen(3) = '1' then
             mem(addr_index)(31 downto 24) <= wdata(31 downto 24);
           end if;
-          case addr_index is
-            when ASCON_M1 =>
-              blk_r <= X"5";
-              blkcnt_r <= X"0";
-            when ASCON_M1 + 1 =>
-              blk_r <= X"5";
-              blkcnt_r <= X"0";
-            when ASCON_M1 + 2 =>
-              blk_r <= X"5";
-              blkcnt_r <= X"0";
-            when ASCON_M1 + 3 =>
-              blk_r <= X"5";
-              blkcnt_r <= X"0";
-            when ASCON_M2 =>
-              blk_r <= X"7";
-              blkcnt_r <= X"0";
-            when ASCON_M2 + 1 =>
-              blk_r <= X"7";
-              blkcnt_r <= X"0";
-            when ASCON_M2 + 2 =>
-              blk_r <= X"7";
-              blkcnt_r <= X"0";
-            when ASCON_M2 + 3 =>
-              blk_r <= X"7";
-              blkcnt_r <= X"0";
-            when others =>
-              blk_r <= (others => '0');  
-              blkcnt_r <= X"0";
-          end case;
         end if;
       else
         if sel = '1' then
@@ -201,6 +172,11 @@ with blkcnt_r select ascon_blk_w <=
                 chns_r <= wdata(7 downto 0);
                 chni_r <= x"00";
               end if;
+            when ASCON_AUTO =>
+              rdata <= x"0000000" & blk_r;
+              if wen(0) = '1' then
+                blk_r <= wdata(3 downto 0);
+              end if;
             when others =>
               null;
           end case;
@@ -214,15 +190,15 @@ with blkcnt_r select ascon_blk_w <=
 
           if rndc_r = stop_r then
             rndc_r <= x"00";
-            if blk_r /= x"0" then
-              rndc_r <= x"f0";
-              blkcnt_r <= std_ulogic_vector(unsigned(blkcnt_r) + 1);
-              if blkcnt_r = blk_r then
-                blkcnt_r <= X"8"; -- We have to apply the PAD.
-              elsif blkcnt_r = X"8" then 
-                rndc_r <= x"00"; -- We have finished the absorb process..
-              end if;
-            end if;
+            -- if blk_r /= x"0" then
+            --   rndc_r <= x"f0";
+            --   blkcnt_r <= std_ulogic_vector(unsigned(blkcnt_r) + 1);
+            --   if blkcnt_r = blk_r then
+            --     blkcnt_r <= X"8"; -- We have to apply the PAD.
+            --   elsif blkcnt_r = X"8" then 
+            --     rndc_r <= x"00"; -- We have finished the absorb process..
+            --   end if;
+            -- end if;
             if chns_r = x"00" then
               irq <= '1';
             end if;
@@ -258,8 +234,8 @@ with blkcnt_r select ascon_blk_w <=
       -- Synchronous, active-high reset. rdata and the state memory deliberately
       -- retain their values, as they do in the original Verilog implementation.
       if rst = '1' then
-        auto_r <= '0';
         blkcnt_r <= x"0";
+        blk_r <= x"0";
         rndc_r <= x"00";
         stop_r <= x"4B";
         chns_r <= x"00";
