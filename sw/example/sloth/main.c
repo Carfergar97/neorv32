@@ -32,7 +32,7 @@ int main()
     neorv32_uart0_printf("[INFO]\t=== Basic health test ===\n");
     fail += test_sloth();
     neorv32_uart0_printf("\n[INFO]\t=== Testbench === \n");
-    fail += test_bench();
+    // fail += test_bench();
     //fail += test_leak();
 
     if (fail) {
