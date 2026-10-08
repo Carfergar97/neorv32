@@ -72,8 +72,8 @@
 #define ASCON_SEED   18
 #define ASCON_SKSD   22
 #define ASCON_M1     26
-#define ASCON_M2     32
-#define ASCON_MTOP   36
+#define ASCON_M2     30
+#define ASCON_MTOP   34
 #define ASCON_CTRL   120
 #define ASCON_STAT   120
 #define ASCON_TRIG   120

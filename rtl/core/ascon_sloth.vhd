@@ -30,8 +30,8 @@ architecture ascon_sloth_rtl of ascon_sloth is
   constant ASCON_SEED : natural := 18;  -- PK.seed
   constant ASCON_SKSD : natural := 22;  -- SK.seed
   constant ASCON_M1   : natural := 26;
-  constant ASCON_M2   : natural := 32;
-  constant ASCON_MTOP : natural := 36;  -- end of data-register block
+  constant ASCON_M2   : natural := 30;
+  constant ASCON_MTOP : natural := 34;  -- end of data-register block
 
   -- control-register block ---------------------------------------------------------
   constant ASCON_CTRL : natural := 120;
@@ -86,7 +86,8 @@ begin
   just_pad_w <= chns_r(7);
   wots_prf_w <= chns_r(6);
 
-  st_i_w <= mem_block_10(mem, ASCON_MEMA) xor ((255 downto 0=>'0') & ascon_blk_w) when (blkcnt_r=x"00" and rndc_r=x"f0" and blk_r/=x"0") else mem_block_10(mem,ASCON_MEMA);
+  -- st_i_w <= mem_block_10(mem, ASCON_MEMA) xor ((255 downto 0=>'0') & ascon_blk_w) when (blkcnt_r=x"00" and rndc_r=x"f0" and blk_r/=x"0") else mem_block_10(mem,ASCON_MEMA);
+  st_i_w <= mem_block_10(mem,ASCON_MEMA);
 
   ascon_round_inst: entity work.ascon_round
   port map (
